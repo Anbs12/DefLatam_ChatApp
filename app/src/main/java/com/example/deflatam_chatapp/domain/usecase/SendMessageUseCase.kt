@@ -2,18 +2,21 @@ package com.example.deflatam_chatapp.domain.usecase
 
 import com.example.deflatam_chatapp.domain.model.Message
 import com.example.deflatam_chatapp.domain.repository.MessageRepository
+import javax.inject.Inject
 
 
 /**
- * Caso de uso para enviar un nuevo mensaje.
+ * Caso de uso para enviar un mensaje en una sala de chat.
  */
-class SendMessageUseCase(private val messageRepository: MessageRepository) {
+class SendMessageUseCase @Inject constructor(
+    private val messageRepository: MessageRepository
+) {
     /**
-     * Ejecuta la operación de envío de mensaje.
-     * @param message El objeto [Message] a enviar.
-     * @return Un [Result] que contiene el objeto [Message] enviado si es exitoso.
+     * Invoca el caso de uso para enviar un mensaje.
+     * @param message El objeto Message a enviar.
+     * @return Un [Result] que indica el éxito o fracaso de la operación.
      */
-    suspend operator fun invoke(message: Message): Result<Message> {
+    suspend operator fun invoke(message: Message): Unit {
         return messageRepository.sendMessage(message)
     }
 }

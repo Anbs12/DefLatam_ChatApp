@@ -8,55 +8,35 @@ import com.example.deflatam_chatapp.domain.repository.ChatRoomRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
- * Implementación del repositorio de salas de chat.
+ * Implementación concreta de [ChatRoomRepository] que gestiona las salas de chat.
  */
+@Singleton
 class ChatRoomRepositoryImpl @Inject constructor(
     private val chatRoomRemoteDataSource: ChatRoomRemoteDataSource,
     private val offlineDataSource: OfflineDataSource
 ) : ChatRoomRepository {
 
     /**
-     * Obtiene un flujo de salas de chat, priorizando la fuente remota y actualizando la caché local.
-     * @return [Flow] de [Result] con lista de [ChatRoom].
+     * Obtiene un flujo de salas de chat. Prioriza la fuente remota y actualiza el caché local.
+     * @return Un [Flow] que emite una lista de [ChatRoom].
      */
-    override fun getChatRooms(): Flow<Result<List<ChatRoom>>> {
-        return chatRoomRemoteDataSource.getChatRooms().onEach { result ->
-            result.onSuccess { chatRooms ->
-                offlineDataSource.saveChatRooms(chatRooms) // Actualiza caché con datos remotos.
-            }
+    override fun getChatRooms(): Flow<List<ChatRoom>> {
+        return chatRoomRemoteDataSource.getChatRooms().onEach { remoteChatRooms ->
+            offlineDataSource.saveChatRooms(remoteChatRooms) // Sincroniza con Room
         }
-        // TODO: Implementar lógica de modo offline con sincronización. Por ahora, solo remoto.
-        // Se podría combinar con offlineDataSource.getChatRooms() y aplicar una estrategia de sincronización.
+        // En una app más robusta, se combinaría con offlineDataSource.getChatRooms()
+        // para mostrar datos cacheados mientras se cargan los remotos.
     }
 
     /**
      * Crea una nueva sala de chat.
      * @param chatRoom La sala de chat a crear.
-     * @return [Result] con el [ChatRoom] creado si tiene éxito.
      */
-    override suspend fun createChatRoom(chatRoom: ChatRoom): Result<ChatRoom> {
-        return chatRoomRemoteDataSource.createChatRoom(chatRoom)
-    }
-
-    /**
-     * Se une a una sala de chat específica.
-     * @param roomId El ID de la sala.
-     * @param userId El ID del usuario.
-     * @return [Result] de [Unit] si tiene éxito.
-     */
-    override suspend fun joinChatRoom(roomId: String, userId: String): Result<Unit> {
-        return chatRoomRemoteDataSource.joinChatRoom(roomId, userId)
-    }
-
-    /**
-     * Abandona una sala de chat específica.
-     * @param roomId El ID de la sala.
-     * @param userId El ID del usuario.
-     * @return [Result] de [Unit] si tiene éxito.
-     */
-    override suspend fun leaveChatRoom(roomId: String, userId: String): Result<Unit> {
-        return chatRoomRemoteDataSource.leaveChatRoom(roomId, userId)
+    override suspend fun createChatRoom(chatRoom: ChatRoom) {
+        chatRoomRemoteDataSource.createChatRoom(chatRoom)
+        offlineDataSource.saveChatRooms(listOf(chatRoom)) // Guarda también localmente
     }
 }

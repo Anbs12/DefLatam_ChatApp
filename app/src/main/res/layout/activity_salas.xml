@@ -4,29 +4,75 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context=".presentation.ui.salas.SalasActivity">
 
     <TextView
-        android:id="@+id/salasTitle"
+        android:id="@+id/titleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Salas de Chat Disponibles"
-        android:textSize="22sp"
+        android:text="Salas de Chat"
+        android:textSize="28sp"
         android:textStyle="bold"
+        android:textColor="@color/material_dynamic_neutral60"
+        android:layout_marginTop="32dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <EditText
+        android:id="@+id/createRoomNameEditText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="32dp"
+        android:hint="Nombre de nueva sala"
+        android:inputType="text"
+        android:padding="12dp"
+        android:background="@drawable/rounded_edittext"
+        app:layout_constraintEnd_toStartOf="@+id/createRoomButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
+
+    <Button
+        android:id="@+id/createRoomButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:text="Crear"
+        android:textColor="@color/white"
+        android:background="@drawable/rounded_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/createRoomNameEditText"
+        app:layout_constraintBottom_toBottomOf="@+id/createRoomNameEditText" />
+
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewSalas"
+        android:id="@+id/salasRecyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/profileButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/salasTitle"
-        tools:listitem="@android:layout/simple_list_item_1" />
+        app:layout_constraintTop_toBottomOf="@+id/createRoomNameEditText"
+        tools:listitem="@layout/item_salas" />
+
+    <Button
+        android:id="@+id/profileButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="16dp"
+        android:text="Mi Perfil"
+        android:textColor="@color/white"
+        android:background="@drawable/rounded_button"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

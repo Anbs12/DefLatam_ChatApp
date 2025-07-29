@@ -2,18 +2,21 @@ package com.example.deflatam_chatapp.domain.usecase
 
 import com.example.deflatam_chatapp.domain.model.User
 import com.example.deflatam_chatapp.domain.repository.AuthRepository
+import javax.inject.Inject
 
 /**
- * Caso de uso para la lógica de inicio de sesión de un usuario.
+ * Caso de uso para autenticar un usuario existente.
  */
-class LoginUserUseCase(private val authRepository: AuthRepository) {
+class LoginUserUseCase @Inject constructor(
+    private val authRepository: AuthRepository
+) {
     /**
-     * Ejecuta la operación de inicio de sesión.
-     * @param email Correo electrónico del usuario.
-     * @param password Contraseña del usuario.
-     * @return Un [Result] que contiene el objeto [User] autenticado si es exitoso.
+     * Invoca el caso de uso para iniciar sesión con credenciales de usuario.
+     * @param email El correo electrónico del usuario.
+     * @param password La contraseña del usuario.
+     * @return Un [Result] que indica el éxito o fracaso de la operación y el objeto [User] en caso de éxito.
      */
-    suspend operator fun invoke(email: String, password: String): Result<User> {
-        return authRepository.login(email, password)
+    suspend operator fun invoke(email: String, password: String): User {
+        return authRepository.loginUser(email, password)
     }
 }

@@ -6,59 +6,65 @@ import com.example.deflatam_chatapp.data.datasource.remote.AuthRemoteDataSource
 import com.example.deflatam_chatapp.domain.model.User
 import com.example.deflatam_chatapp.domain.repository.AuthRepository
 import javax.inject.Inject
+import javax.inject.Singleton
+
 
 /**
- * Implementación del repositorio de autenticación.
+ * Implementación concreta de [AuthRepository] que maneja la autenticación y los datos del usuario.
  */
+@Singleton
 class AuthRepositoryImpl @Inject constructor(
     private val authRemoteDataSource: AuthRemoteDataSource,
     private val offlineDataSource: OfflineDataSource
 ) : AuthRepository {
 
     /**
-     * Inicia sesión del usuario.
+     * Registra un nuevo usuario y lo guarda localmente.
      * @param email Correo electrónico.
      * @param password Contraseña.
-     * @return [Result] con el [User] si tiene éxito.
-     */
-    override suspend fun login(email: String, password: String): Result<User> {
-        return authRemoteDataSource.login(email, password).onSuccess { user ->
-            offlineDataSource.saveUser(user) // Guarda el usuario en caché local.
-        }
-    }
-
-    /**
-     * Registra un nuevo usuario.
      * @param username Nombre de usuario.
+     * @return El [User] registrado.
+     */
+    override suspend fun registerUser(email: String, password: String, username: String): User {
+        val user = authRemoteDataSource.registerUser(email, password, username)
+        offlineDataSource.saveUser(user) // Guarda en Room para acceso offline
+        return user
+    }
+
+    /**
+     * Inicia sesión con un usuario y lo guarda localmente.
      * @param email Correo electrónico.
      * @param password Contraseña.
-     * @return [Result] con el [User] si tiene éxito.
+     * @return El [User] autenticado.
      */
-    override suspend fun register(username: String, email: String, password: String): Result<User> {
-        return authRemoteDataSource.register(username, email, password).onSuccess { user ->
-            offlineDataSource.saveUser(user) // Guarda el usuario en caché local.
-        }
+    override suspend fun loginUser(email: String, password: String): User {
+        val user = authRemoteDataSource.loginUser(email, password)
+        offlineDataSource.saveUser(user) // Guarda en Room para acceso offline
+        return user
     }
 
     /**
-     * Cierra la sesión del usuario.
-     * @return [Result] de [Unit] si tiene éxito.
+     * Cierra la sesión del usuario actual y limpia los datos locales.
      */
-    override suspend fun logout(): Result<Unit> {
-        return authRemoteDataSource.logout().onSuccess {
-            offlineDataSource.clearAllData() // Limpia los datos locales al cerrar sesión.
-        }
+    override suspend fun logoutUser() {
+        authRemoteDataSource.logoutUser()
+        offlineDataSource.clearAllData() // Limpia todos los datos locales al cerrar sesión.
     }
 
     /**
-     * Obtiene el usuario actualmente autenticado desde la caché o Firebase.
-     * @return El [User] actual o `null`.
+     * Obtiene el usuario actualmente autenticado.
+     * Primero intenta obtenerlo remotamente, si no, lo busca localmente.
+     * @return El [User] actual o null.
      */
-    override fun getCurrentUser(): User? {
+    override suspend fun getCurrentUser(): User? {
         val firebaseUser = authRemoteDataSource.getCurrentFirebaseUser()
-        return firebaseUser?.let {
-            // Intentar obtener de la caché primero, si no, crear un objeto User básico.
-            offlineDataSource.getUserById(it.uid) ?: User(it.uid, it.displayName ?: "Desconocido", it.email ?: "")
+        return if (firebaseUser != null) {
+            // Si hay un usuario en Firebase, intenta obtenerlo de Firestore
+            // Si no está en Firestore, podría ser un problema de sincronización o un nuevo usuario.
+            // Por ahora, asumimos que si está en Firebase Auth, existe en Firestore o se creará pronto.
+            authRemoteDataSource.getUserById(firebaseUser.uid) ?: offlineDataSource.getUserById(firebaseUser.uid)
+        } else {
+            offlineDataSource.getCurrentUser() // Intenta obtener el último usuario guardado localmente
         }
     }
 }

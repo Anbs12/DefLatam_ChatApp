@@ -1,9 +1,9 @@
 package com.example.deflatam_chatapp.data.database.converters
 
 import androidx.room.TypeConverter
+import com.example.deflatam_chatapp.domain.model.Message
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.example.deflatam_chatapp.domain.model.Message
 
 /**
  * Provee TypeConverters para Room Database.

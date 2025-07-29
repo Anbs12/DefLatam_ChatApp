@@ -6,7 +6,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.deflatam_chatapp.domain.model.User
-import kotlinx.coroutines.flow.Flow
 
 /**
  * Interfaz DAO (Data Access Object) para operaciones con la tabla de usuarios.
@@ -33,4 +32,11 @@ interface UserDao {
      */
     @Query("DELETE FROM users")
     suspend fun deleteAllUsers()
+
+    /**
+     * Obtiene el usuario actual autenticado de la base de datos local.
+     * @return El usuario actual o null si no está autenticado.
+     */
+    @Query("SELECT * FROM users LIMIT 1")
+    suspend fun getCurrentUser(): User?
 }

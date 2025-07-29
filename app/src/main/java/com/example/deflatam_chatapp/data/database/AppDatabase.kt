@@ -12,6 +12,8 @@ import com.example.deflatam_chatapp.domain.model.ChatRoom
 import com.example.deflatam_chatapp.domain.model.Message
 import com.example.deflatam_chatapp.domain.model.User
 
+
+
 /**
  * La clase principal de la base de datos Room para la aplicación de chat.
  */

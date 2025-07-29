@@ -3,14 +3,14 @@ package com.example.deflatam_chatapp.di
 
 import android.content.Context
 import androidx.room.Room
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.messaging.FirebaseMessaging
-import com.google.firebase.storage.FirebaseStorage
 import com.example.deflatam_chatapp.data.database.AppDatabase
 import com.example.deflatam_chatapp.data.database.dao.ChatRoomDao
 import com.example.deflatam_chatapp.data.database.dao.MessageDao
 import com.example.deflatam_chatapp.data.database.dao.UserDao
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.storage.FirebaseStorage
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

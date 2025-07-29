@@ -1,57 +1,54 @@
 package com.example.deflatam_chatapp.domain.repository
 
+import android.net.Uri
 import com.example.deflatam_chatapp.domain.model.Message
-import com.example.deflatam_chatapp.domain.model.MessageType
 import kotlinx.coroutines.flow.Flow
 
 
 /**
- * Interfaz para las operaciones relacionadas con los mensajes de chat.
+ * Interfaz de repositorio para las operaciones relacionadas con los mensajes de chat.
  */
 interface MessageRepository {
     /**
-     * Envía un nuevo mensaje a una sala de chat.
-     * @param message El objeto [Message] a enviar.
-     * @return El objeto [Message] enviado si la operación es exitosa.
-     */
-    suspend fun sendMessage(message: Message): Result<Message>
-
-    /**
      * Obtiene un flujo de mensajes para una sala de chat específica.
      * @param roomId El ID de la sala de chat.
-     * @return Un [Flow] que emite una lista de [Message] para la sala.
+     * @return Un [Flow] que emite una lista de [Message].
      */
-    fun getMessages(roomId: String): Flow<Result<List<Message>>>
+    fun getMessages(roomId: String): Flow<List<Message>>
 
     /**
-     * Actualiza el estado de un mensaje (ej. de enviado a entregado/leído).
-     * @param messageId El ID del mensaje a actualizar.
-     * @param status El nuevo estado del mensaje.
-     * @return Un [Result] indicando el éxito o fallo de la operación.
+     * Envía un nuevo mensaje a una sala de chat.
+     * @param message El mensaje a enviar.
      */
-    suspend fun updateMessageStatus(messageId: String, status: String): Result<Unit>
+    suspend fun sendMessage(message: Message)
 
     /**
-     * Envía un archivo o imagen.
-     * @param roomId El ID de la sala.
+     * Sube un archivo y envía un mensaje que referencia ese archivo.
+     * @param roomId El ID de la sala de chat.
      * @param senderId El ID del remitente.
-     * @param fileUri URI local del archivo a enviar.
-     * @param fileName Nombre del archivo.
-     * @param messageType Tipo de mensaje (IMAGE o FILE).
-     * @return El objeto [Message] enviado con la URL del archivo.
+     * @param fileUri La URI local del archivo a subir.
+     * @param fileType El tipo de archivo (ej. IMAGE, FILE).
+     * @param fileName El nombre del archivo.
+     * @return El mensaje creado y enviado con la referencia al archivo.
      */
     suspend fun sendFile(
         roomId: String,
         senderId: String,
-        fileUri: String, // Usar un URI de String por ahora, luego podría ser Uri de Android.
-        fileName: String,
-        messageType: MessageType
-    ): Result<Message>
+        fileUri: Uri,
+        fileType: Message.MessageType,
+        fileName: String
+    ): Message
 
     /**
-     * Escucha mensajes en tiempo real a través de WebSockets.
-     * @param roomId El ID de la sala para la cual escuchar mensajes.
-     * @return Un [Flow] de [Message] que se reciben en tiempo real.
+     * Actualiza el estado de un mensaje (ej. enviado, entregado, leído).
+     * @param roomId El ID de la sala de chat.
+     * @param messageId El ID del mensaje a actualizar.
+     * @param newStatus El nuevo estado del mensaje.
      */
-    fun observeWebSocketMessages(roomId: String): Flow<Message>
+    suspend fun updateMessageStatus(
+        roomId: String,
+        messageId: String,
+        newStatus: Message.MessageStatus
+    )
 }
+

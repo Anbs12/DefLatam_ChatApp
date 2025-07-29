@@ -1,9 +1,9 @@
 package com.example.deflatam_chatapp.di
 
 
-import com.google.gson.Gson
 import com.example.deflatam_chatapp.data.datasource.websocket.WebSocketManager
 import com.example.deflatam_chatapp.data.network.OkHttpClientProvider
+import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

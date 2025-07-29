@@ -4,39 +4,62 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.deflatam_chatapp.R
+import com.example.deflatam_chatapp.domain.model.ChatRoom
 
 
 /**
  * Adaptador para mostrar la lista de salas de chat en un RecyclerView.
  */
-class SalasAdapter(private val salas: List<String>) : RecyclerView.Adapter<SalasAdapter.SalasViewHolder>() {
+class SalasAdapter(private val onItemClick: (ChatRoom) -> Unit) :
+    ListAdapter<ChatRoom, SalasAdapter.ChatRoomViewHolder>(ChatRoomDiffCallback()) {
 
-    /**
-     * Define la vista de cada elemento de la sala.
-     */
-    class SalasViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val salaName: TextView = view.findViewById(android.R.id.text1) // Usando un layout simple de Android para empezar
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatRoomViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_chatroom, parent, false)
+        return ChatRoomViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ChatRoomViewHolder, position: Int) {
+        val chatRoom = getItem(position)
+        holder.bind(chatRoom)
     }
 
     /**
-     * Crea nuevas vistas (invocado por el layout manager).
+     * ViewHolder para cada elemento de sala de chat.
      */
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SalasViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(android.R.layout.simple_list_item_1, parent, false) // Puedes cambiar esto por un layout personalizado más adelante
-        return SalasViewHolder(view)
+    inner class ChatRoomViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val roomNameTextView: TextView = itemView.findViewById(R.id.roomNameTextView)
+        private val roomDescriptionTextView: TextView = itemView.findViewById(R.id.roomDescriptionTextView)
+
+        init {
+            itemView.setOnClickListener {
+                onItemClick(getItem(adapterPosition))
+            }
+        }
+
+        /**
+         * Enlaza los datos de una sala de chat con las vistas del ViewHolder.
+         * @param chatRoom La sala de chat a enlazar.
+         */
+        fun bind(chatRoom: ChatRoom) {
+            roomNameTextView.text = chatRoom.name
+            roomDescriptionTextView.text = chatRoom.description ?: "Sin descripción"
+        }
     }
 
     /**
-     * Reemplaza el contenido de una vista (invocado por el layout manager).
+     * Callback para calcular las diferencias entre listas de salas de chat.
      */
-    override fun onBindViewHolder(holder: SalasViewHolder, position: Int) {
-        holder.salaName.text = salas[position]
-    }
+    class ChatRoomDiffCallback : DiffUtil.ItemCallback<ChatRoom>() {
+        override fun areItemsTheSame(oldItem: ChatRoom, newItem: ChatRoom): Boolean {
+            return oldItem.id == newItem.id
+        }
 
-    /**
-     * Devuelve el tamaño de tu conjunto de datos (invocado por el layout manager).
-     */
-    override fun getItemCount(): Int = salas.size
+        override fun areContentsTheSame(oldItem: ChatRoom, newItem: ChatRoom): Boolean {
+            return oldItem == newItem
+        }
+    }
 }

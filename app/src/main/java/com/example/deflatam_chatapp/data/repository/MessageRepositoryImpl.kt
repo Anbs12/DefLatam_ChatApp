@@ -6,139 +6,125 @@ import com.example.deflatam_chatapp.data.datasource.remote.MessageRemoteDataSour
 import com.example.deflatam_chatapp.data.datasource.websocket.WebSocketManager
 import com.example.deflatam_chatapp.domain.model.Message
 import com.example.deflatam_chatapp.domain.repository.MessageRepository
+import com.example.deflatam_chatapp.utils.EncryptionUtils
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
-import java.util.UUID
 import javax.inject.Inject
-import androidx.core.net.toUri
+import javax.inject.Singleton
+
 
 /**
- * Implementación del repositorio de mensajes.
+ * Implementación concreta de [MessageRepository] que gestiona los mensajes de chat.
  */
+@Singleton
 class MessageRepositoryImpl @Inject constructor(
     private val messageRemoteDataSource: MessageRemoteDataSource,
     private val webSocketManager: WebSocketManager,
-    private val offlineDataSource: OfflineDataSource
+    private val offlineDataSource: OfflineDataSource,
+    private val encryptionUtils: EncryptionUtils
 ) : MessageRepository {
 
-    /**
-     * Envía un nuevo mensaje.
-     * También lo envía por WebSocket para tiempo real.
-     * @param message El mensaje a enviar.
-     * @return [Result] con el [Message] enviado.
-     */
-    override suspend fun sendMessage(message: Message): Result<Message> {
-        // Enviar a Firestore para persistencia.
-        val remoteResult = messageRemoteDataSource.sendMessage(message)
-        remoteResult.onSuccess { sentMessage ->
-            offlineDataSource.addMessage(sentMessage) // Agrega a la caché local.
-            // Enviar por WebSocket para actualización en tiempo real a otros clientes.
-            webSocketManager.sendWebSocketMessage(sentMessage)
-        }
-        return remoteResult
+    init {
+        webSocketManager.connect() // Asegurarse de que el WebSocket se conecte al inicializar el repositorio
     }
 
     /**
-     * Obtiene un flujo de mensajes para una sala.
-     * Combina mensajes de Firestore (histórico) y WebSocket (tiempo real).
-     * @param roomId El ID de la sala.
-     * @return [Flow] de [Result] con lista de [Message].
+     * Obtiene un flujo combinado de mensajes de la fuente remota (Firestore) y del WebSocket.
+     * También actualiza el caché local con los mensajes.
+     * @param roomId El ID de la sala de chat.
+     * @return Un [Flow] que emite una lista de [Message].
      */
-    override fun getMessages(roomId: String): Flow<Result<List<Message>>> {
-        // Observar mensajes desde Firestore para el historial.
-        val firestoreMessages = messageRemoteDataSource.getMessages(roomId).onEach { result ->
-            result.onSuccess { messages ->
-                offlineDataSource.saveMessages(roomId, messages) // Sincroniza con la caché local.
-            }
-        }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun getMessages(roomId: String): Flow<List<Message>> {
+        // Combina los mensajes de Firestore y WebSocket, y descifra el contenido.
+        return combine(
+            messageRemoteDataSource.getMessages(roomId),
+            webSocketManager.incomingMessages.map { message ->
+                // Solo emitir el mensaje del WebSocket si pertenece a la sala actual
+                if (message.roomId == roomId) listOf(message) else emptyList()
+            }.distinctUntilChanged().onEach { incomingWsMessages ->
+                // Guardar mensajes entrantes del WebSocket en Room
+                if (incomingWsMessages.isNotEmpty()) {
+                    offlineDataSource.saveMessages(incomingWsMessages)
+                }
+            },
+            offlineDataSource.getMessages(roomId).distinctUntilChanged() // Mensajes desde Room
+        ) { remoteMessages, websocketMessages, localMessages ->
+            // Prioridad: WebSocket (más reciente) > Remoto > Local
+            val combined = (remoteMessages + websocketMessages + localMessages)
+                .distinctBy { it.id } // Elimina duplicados por ID
+                .sortedBy { it.timestamp } // Ordena por marca de tiempo
 
-        // Observar mensajes desde el WebSocket para tiempo real.
-        val websocketFlow = webSocketManager.incomingMessages
-            .onEach { message ->
-                if (message.roomId == roomId) {
-                    offlineDataSource.addMessage(message) // Añade mensajes de WebSocket a la caché.
+            // Descifra el contenido de los mensajes antes de emitirlos.
+            combined.map { message ->
+                if (message.type == Message.MessageType.TEXT) {
+                    message.copy(content = encryptionUtils.decrypt(message.content) ?: message.content)
+                } else {
+                    message // Los mensajes de archivo/imagen no se descifran aquí.
                 }
             }
-            .map {
-                Result.success(
-                    offlineDataSource.getMessages(roomId)
-                )
-            }
-
-        return merge(firestoreMessages, websocketFlow) as Flow<Result<List<Message>>>
+        }.distinctUntilChanged() // Asegura que solo se emitan cambios reales.
     }
 
     /**
-     * Actualiza el estado de un mensaje.
-     * @param messageId ID del mensaje.
-     * @param status Nuevo estado del mensaje.
-     * @return [Result] de [Unit] si tiene éxito.
+     * Envía un mensaje. Lo cifra, lo envía a Firestore y a través de WebSocket.
+     * @param message El mensaje a enviar.
      */
-    override suspend fun updateMessageStatus(messageId: String, status: String): Result<Unit> {
-        return messageRemoteDataSource.updateMessageStatus(messageId, status).onSuccess {
-            offlineDataSource.updateMessageStatus(
-                messageId,
-                status
-            ) // Actualiza el estado en la caché.
+    override suspend fun sendMessage(message: Message) {
+        val encryptedMessage = if (message.type == Message.MessageType.TEXT) {
+            val encryptedContent = encryptionUtils.encrypt(message.content)
+            message.copy(content = encryptedContent ?: message.content)
+        } else {
+            message
         }
+        messageRemoteDataSource.sendMessage(encryptedMessage) // Persiste en Firestore.
+        webSocketManager.sendMessage(encryptedMessage) // Envía por WebSocket para tiempo real.
+        offlineDataSource.addMessage(encryptedMessage) // Añade a la caché local.
     }
 
     /**
-     * Envía un archivo o imagen.
-     * Sube el archivo a Firebase Storage y luego envía un mensaje con la URL.
-     * @param roomId ID de la sala.
-     * @param senderId ID del remitente.
-     * @param fileUri URI local del archivo.
-     * @param fileName Nombre del archivo.
-     * @param messageType Tipo de mensaje.
-     * @return [Result] con el [Message] enviado.
+     * Sube un archivo a Firebase Storage y luego envía un mensaje con su URL.
+     * @param roomId El ID de la sala de chat.
+     * @param senderId El ID del remitente.
+     * @param fileUri La URI del archivo.
+     * @param fileType El tipo de archivo.
+     * @param fileName El nombre del archivo.
+     * @return El [Message] enviado.
      */
     override suspend fun sendFile(
         roomId: String,
         senderId: String,
-        fileUri: String,
-        fileName: String,
-        messageType: Message.MessageType
-    ): Result<Message> {
-        val uri = fileUri.toUri()
-        return messageRemoteDataSource.uploadFile(uri, fileName, messageType).fold(
-            onSuccess = { fileUrl ->
-                val message = Message(
-                    id = UUID.randomUUID().toString(),
-                    roomId = roomId,
-                    senderId = senderId,
-                    content = if (messageType == Message.MessageType.IMAGE) "Imagen enviada" else "Archivo enviado",
-                    timestamp = System.currentTimeMillis(),
-                    type = messageType,
-                    fileUrl = fileUrl,
-                    fileName = fileName,
-                    status = Message.MessageStatus.SENT
-                )
-                sendMessage(message) // Envía el mensaje con la URL del archivo.
-            },
-            onFailure = { it: Throwable ->
-                Result.failure(it) // Propaga el error de subida de archivo.
-            }
+        fileUri: Uri,
+        fileType: Message.MessageType,
+        fileName: String
+    ): Message {
+        val fileUrl = messageRemoteDataSource.uploadFile(fileUri, fileType)
+        val message = Message(
+            roomId = roomId,
+            senderId = senderId,
+            content = "File: $fileName", // Contenido textual para el mensaje de archivo.
+            timestamp = System.currentTimeMillis(),
+            type = fileType,
+            fileUrl = fileUrl,
+            fileName = fileName,
+            status = Message.MessageStatus.SENT
         )
+        sendMessage(message) // Reutiliza la lógica de enviar mensaje.
+        return message
     }
 
     /**
-     * Observa mensajes en tiempo real desde el WebSocket.
-     * @param roomId El ID de la sala para la cual escuchar mensajes.
-     * @return Un [Flow] de [Message] que se reciben en tiempo real.
+     * Actualiza el estado de un mensaje.
+     * @param roomId El ID de la sala de chat.
+     * @param messageId El ID del mensaje.
+     * @param newStatus El nuevo estado.
      */
-    override fun observeWebSocketMessages(roomId: String): Flow<Message> {
-        // Asegúrate de que el WebSocket esté conectado a la URL correcta.
-        // Normalmente, la conexión se gestionaría en un punto más alto (ej. Application o ViewModel)
-        // para que sea persistente durante la vida de la app o de la sala de chat.
-        // Por simplicidad, aquí solo retornamos el flujo existente.
-        return webSocketManager.incomingMessages
-            .onEach { message ->
-                if (message.roomId == roomId) {
-                    offlineDataSource.addMessage(message) // Asegurar que los mensajes de WS se añadan a la caché.
-                }
-            }
+    override suspend fun updateMessageStatus(roomId: String, messageId: String, newStatus: Message.MessageStatus) {
+        messageRemoteDataSource.updateMessageStatus(roomId, messageId, newStatus)
+        offlineDataSource.updateMessageStatus(messageId, newStatus) // Actualiza también localmente.
     }
 }

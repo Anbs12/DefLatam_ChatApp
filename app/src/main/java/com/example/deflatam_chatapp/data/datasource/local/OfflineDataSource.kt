@@ -4,12 +4,11 @@ package com.example.deflatam_chatapp.data.datasource.local
 import com.example.deflatam_chatapp.data.database.dao.ChatRoomDao
 import com.example.deflatam_chatapp.data.database.dao.MessageDao
 import com.example.deflatam_chatapp.data.database.dao.UserDao
-import com.example.deflatam_chatapp.domain.model.Message
 import com.example.deflatam_chatapp.domain.model.ChatRoom
+import com.example.deflatam_chatapp.domain.model.Message
 import com.example.deflatam_chatapp.domain.model.User
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.singleOrNull
+import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -57,10 +56,9 @@ class OfflineDataSource @Inject constructor(
 
     /**
      * Guarda una lista de mensajes para una sala específica en la base de datos local.
-     * @param roomId El ID de la sala.
      * @param messages La lista de mensajes a guardar.
      */
-    suspend fun saveMessages(roomId: String, messages: List<Message>) {
+    suspend fun saveMessages(messages: List<Message>) {
         messageDao.insertAllMessages(messages)
     }
 
@@ -86,11 +84,11 @@ class OfflineDataSource @Inject constructor(
      * @param messageId El ID del mensaje a actualizar.
      * @param newStatus El nuevo estado del mensaje.
      */
-    suspend fun updateMessageStatus(messageId: String, newStatus: String) {
+    suspend fun updateMessageStatus(messageId: String, newStatus: Message.MessageStatus) {
         // Primero, obtener el mensaje para actualizarlo
-        val message = messageDao.getMessagesForRoom(messageId).map { it.find { msg -> msg.id == messageId } }.singleOrNull()
+        val message = messageDao.getMessagesForRoom(messageId).firstOrNull()?.find { msg -> msg.id == messageId }
         message?.let {
-            messageDao.updateMessage(it.copy(status = Message.MessageStatus.valueOf(newStatus)))
+            messageDao.updateMessage(it.copy(status = newStatus))
         }
     }
 
@@ -102,4 +100,13 @@ class OfflineDataSource @Inject constructor(
         chatRoomDao.deleteAllChatRooms()
         messageDao.deleteAllMessages()
     }
+
+    /**
+     * Obtiene el usuario actual autenticado de la base de datos local.
+     * @return El usuario actual o null si no está autenticado.
+     */
+    suspend fun getCurrentUser(): User? {
+        return userDao.getCurrentUser()
+    }
+
 }

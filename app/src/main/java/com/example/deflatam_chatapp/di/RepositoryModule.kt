@@ -1,6 +1,5 @@
 package com.example.deflatam_chatapp.di
 
-
 import com.example.deflatam_chatapp.data.datasource.local.OfflineDataSource
 import com.example.deflatam_chatapp.data.datasource.remote.AuthRemoteDataSource
 import com.example.deflatam_chatapp.data.datasource.remote.ChatRoomRemoteDataSource
@@ -12,23 +11,25 @@ import com.example.deflatam_chatapp.data.repository.MessageRepositoryImpl
 import com.example.deflatam_chatapp.domain.repository.AuthRepository
 import com.example.deflatam_chatapp.domain.repository.ChatRoomRepository
 import com.example.deflatam_chatapp.domain.repository.MessageRepository
+import com.example.deflatam_chatapp.utils.EncryptionUtils
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+
 /**
- * Módulo Hilt para proveer las implementaciones de los repositorios.
+ * Módulo de Hilt que proporciona las implementaciones de los repositorios.
  */
 @Module
 @InstallIn(SingletonComponent::class)
 object RepositoryModule {
 
     /**
-     * Provee la implementación de AuthRepository.
-     * @param authRemoteDataSource Fuente de datos remota de autenticación.
-     * @param offlineDataSource Fuente de datos local para offline.
+     * Provee una instancia Singleton de [AuthRepository].
+     * @param authRemoteDataSource Fuente de datos remota para autenticación.
+     * @param offlineDataSource Fuente de datos local para modo offline.
      * @return Implementación de [AuthRepository].
      */
     @Provides
@@ -41,9 +42,9 @@ object RepositoryModule {
     }
 
     /**
-     * Provee la implementación de ChatRoomRepository.
-     * @param chatRoomRemoteDataSource Fuente de datos remota de salas de chat.
-     * @param offlineDataSource Fuente de datos local para offline.
+     * Provee una instancia Singleton de [ChatRoomRepository].
+     * @param chatRoomRemoteDataSource Fuente de datos remota para salas de chat.
+     * @param offlineDataSource Fuente de datos local para modo offline.
      * @return Implementación de [ChatRoomRepository].
      */
     @Provides
@@ -56,19 +57,26 @@ object RepositoryModule {
     }
 
     /**
-     * Provee la implementación de MessageRepository.
-     * @param messageRemoteDataSource Fuente de datos remota de mensajes.
+     * Provee una instancia Singleton de [MessageRepository].
+     * @param messageRemoteDataSource Fuente de datos remota para mensajes.
+     * @param offlineDataSource Fuente de datos local para modo offline.
      * @param webSocketManager Gestor de WebSocket.
-     * @param offlineDataSource Fuente de datos local para offline.
      * @return Implementación de [MessageRepository].
      */
     @Provides
     @Singleton
     fun provideMessageRepository(
         messageRemoteDataSource: MessageRemoteDataSource,
+        offlineDataSource: OfflineDataSource,
         webSocketManager: WebSocketManager,
-        offlineDataSource: OfflineDataSource
+        encryptionUtils: EncryptionUtils
     ): MessageRepository {
-        return MessageRepositoryImpl(messageRemoteDataSource, webSocketManager, offlineDataSource)
+        return MessageRepositoryImpl(
+            messageRemoteDataSource,
+            webSocketManager,
+            offlineDataSource,
+            encryptionUtils
+        )
     }
 }
+

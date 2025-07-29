@@ -3,49 +3,177 @@ package com.example.deflatam_chatapp.presentation.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.example.deflatam_chatapp.R
+import com.example.deflatam_chatapp.domain.model.Message
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 
 /**
- * Adaptador para mostrar los mensajes de chat en un RecyclerView.
+ * Adaptador para mostrar la lista de mensajes en un RecyclerView.
  */
-class ChatAdapter(private val messages: List<String>) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
+class ChatAdapter(
+    private val currentUserId: String,
+    private val onItemClick: (Message) -> Unit
+) : ListAdapter<Message, RecyclerView.ViewHolder>(MessageDiffCallback()) {
 
-    /**
-     * Define la vista de cada elemento del mensaje.
-     */
-    class ChatViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val messageText: TextView = view.findViewById(android.R.id.text1) // Usando un layout simple de Android para empezar
-        val senderText: TextView = view.findViewById(android.R.id.text2)
+    companion object {
+        private const val VIEW_TYPE_SENT = 1 // Mensaje enviado por el usuario actual.
+        private const val VIEW_TYPE_RECEIVED = 2 // Mensaje recibido de otro usuario.
     }
 
-    /**
-     * Crea nuevas vistas (invocado por el layout manager).
-     */
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(android.R.layout.simple_list_item_2, parent, false) // Puedes cambiar esto por un layout personalizado más adelante
-        return ChatViewHolder(view)
+    override fun getItemViewType(position: Int): Int {
+        val message = getItem(position)
+        return if (message.senderId == currentUserId) VIEW_TYPE_SENT else VIEW_TYPE_RECEIVED
     }
 
-    /**
-     * Reemplaza el contenido de una vista (invocado por el layout manager).
-     */
-    override fun onBindViewHolder(holder: ChatViewHolder, position: Int) {
-        // En un caso real, messages sería una lista de objetos Message con remitente y contenido.
-        val messageParts = messages[position].split(": ", limit = 2)
-        if (messageParts.size == 2) {
-            holder.senderText.text = messageParts[0]
-            holder.messageText.text = messageParts[1]
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return if (viewType == VIEW_TYPE_SENT) {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_message_sent, parent, false)
+            SentMessageViewHolder(view)
         } else {
-            holder.senderText.text = "Desconocido"
-            holder.messageText.text = messages[position]
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_message_received, parent, false)
+            ReceivedMessageViewHolder(view)
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val message = getItem(position)
+        when (holder) {
+            is SentMessageViewHolder -> holder.bind(message)
+            is ReceivedMessageViewHolder -> holder.bind(message)
         }
     }
 
     /**
-     * Devuelve el tamaño de tu conjunto de datos (invocado por el layout manager).
+     * ViewHolder para mensajes enviados por el usuario actual.
      */
-    override fun getItemCount(): Int = messages.size
+    inner class SentMessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val messageContentTextView: TextView = itemView.findViewById(R.id.messageContentTextView)
+        private val timestampTextView: TextView = itemView.findViewById(R.id.timestampTextView)
+        private val messageStatusTextView: TextView = itemView.findViewById(R.id.messageStatusTextView)
+        private val fileNameTextView: TextView = itemView.findViewById(R.id.fileNameTextView)
+        private val imageView: ImageView = itemView.findViewById(R.id.imageView)
+
+        init {
+            itemView.setOnClickListener {
+                onItemClick(getItem(adapterPosition))
+            }
+        }
+
+        /**
+         * Enlaza los datos de un mensaje enviado con las vistas.
+         * @param message El mensaje a enlazar.
+         */
+        fun bind(message: Message) {
+            val dateFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
+            timestampTextView.text = dateFormat.format(Date(message.timestamp))
+            messageStatusTextView.text = when (message.status) {
+                Message.MessageStatus.SENT -> "Enviado"
+                Message.MessageStatus.DELIVERED -> "Entregado"
+                Message.MessageStatus.READ -> "Leído"
+            }
+
+            // Manejo de diferentes tipos de mensajes
+            when (message.type) {
+                Message.MessageType.TEXT -> {
+                    messageContentTextView.text = message.content
+                    messageContentTextView.visibility = View.VISIBLE
+                    fileNameTextView.visibility = View.GONE
+                    imageView.visibility = View.GONE
+                }
+                Message.MessageType.IMAGE -> {
+                    messageContentTextView.visibility = View.GONE
+                    fileNameTextView.visibility = View.GONE
+                    imageView.visibility = View.VISIBLE
+                    Glide.with(itemView.context)
+                        .load(message.fileUrl)
+                        .placeholder(R.drawable.ic_notification) // Placeholder mientras carga
+                        .error(R.drawable.ic_notification) // Imagen de error
+                        .into(imageView)
+                }
+                Message.MessageType.FILE -> {
+                    messageContentTextView.text = message.content // Mostrar "File: fileName"
+                    fileNameTextView.text = message.fileName // Mostrar el nombre del archivo
+                    messageContentTextView.visibility = View.VISIBLE
+                    fileNameTextView.visibility = View.VISIBLE
+                    imageView.visibility = View.GONE
+                }
+            }
+        }
+    }
+
+    /**
+     * ViewHolder para mensajes recibidos de otros usuarios.
+     */
+    inner class ReceivedMessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val senderNameTextView: TextView = itemView.findViewById(R.id.senderNameTextView)
+        private val messageContentTextView: TextView = itemView.findViewById(R.id.messageContentTextView)
+        private val timestampTextView: TextView = itemView.findViewById(R.id.timestampTextView)
+        private val fileNameTextView: TextView = itemView.findViewById(R.id.fileNameTextView)
+        private val imageView: ImageView = itemView.findViewById(R.id.imageView)
+
+        init {
+            itemView.setOnClickListener {
+                onItemClick(getItem(adapterPosition))
+            }
+        }
+
+        /**
+         * Enlaza los datos de un mensaje recibido con las vistas.
+         * @param message El mensaje a enlazar.
+         */
+        fun bind(message: Message) {
+            senderNameTextView.text = message.senderId // Idealmente, buscarías el username por ID aquí.
+            val dateFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
+            timestampTextView.text = dateFormat.format(Date(message.timestamp))
+
+            // Manejo de diferentes tipos de mensajes
+            when (message.type) {
+                Message.MessageType.TEXT -> {
+                    messageContentTextView.text = message.content
+                    messageContentTextView.visibility = View.VISIBLE
+                    fileNameTextView.visibility = View.GONE
+                    imageView.visibility = View.GONE
+                }
+                Message.MessageType.IMAGE -> {
+                    messageContentTextView.visibility = View.GONE
+                    fileNameTextView.visibility = View.GONE
+                    imageView.visibility = View.VISIBLE
+                    Glide.with(itemView.context)
+                        .load(message.fileUrl)
+                        .placeholder(R.drawable.ic_notification)
+                        .error(R.drawable.ic_notification)
+                        .into(imageView)
+                }
+                Message.MessageType.FILE -> {
+                    messageContentTextView.text = message.content // Mostrar "File: fileName"
+                    fileNameTextView.text = message.fileName // Mostrar el nombre del archivo
+                    messageContentTextView.visibility = View.VISIBLE
+                    fileNameTextView.visibility = View.VISIBLE
+                    imageView.visibility = View.GONE
+                }
+            }
+        }
+    }
+
+    /**
+     * Callback para calcular las diferencias entre listas de mensajes.
+     */
+    class MessageDiffCallback : DiffUtil.ItemCallback<Message>() {
+        override fun areItemsTheSame(oldItem: Message, newItem: Message): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: Message, newItem: Message): Boolean {
+            return oldItem == newItem
+        }
+    }
 }

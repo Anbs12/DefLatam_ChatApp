@@ -2,20 +2,22 @@ package com.example.deflatam_chatapp.domain.usecase
 
 import com.example.deflatam_chatapp.domain.model.User
 import com.example.deflatam_chatapp.domain.repository.AuthRepository
+import javax.inject.Inject
 
 
 /**
- * Caso de uso para la lógica de registro de un nuevo usuario.
+ * Caso de uso para registrar un nuevo usuario.
  */
-class RegisterUserUseCase(private val authRepository: AuthRepository) {
+class RegisterUserUseCase @Inject constructor(
+    private val authRepository: AuthRepository
+) {
     /**
-     * Ejecuta la operación de registro de usuario.
-     * @param username Nombre de usuario.
-     * @param email Correo electrónico del nuevo usuario.
-     * @param password Contraseña del nuevo usuario.
-     * @return Un [Result] que contiene el objeto [User] registrado si es exitoso.
+     * Invoca el caso de uso para registrar un nuevo usuario con email y contraseña.
+     * @param email El correo electrónico del nuevo usuario.
+     * @param password La contraseña del nuevo usuario.
+     * @return Un [Result] que indica el éxito o fracaso de la operación y el objeto [User] en caso de éxito.
      */
-    suspend operator fun invoke(username: String, email: String, password: String): Result<User> {
-        return authRepository.register(username, email, password)
+    suspend operator fun invoke(email: String, password: String, userName: String): User {
+        return authRepository.registerUser(email, password, userName)
     }
 }

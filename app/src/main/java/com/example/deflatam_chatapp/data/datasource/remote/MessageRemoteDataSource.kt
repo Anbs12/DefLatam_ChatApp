@@ -2,96 +2,103 @@ package com.example.deflatam_chatapp.data.datasource.remote
 
 import android.net.Uri
 import com.example.deflatam_chatapp.domain.model.Message
+import com.example.deflatam_chatapp.utils.Constants
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.toObject
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 import javax.inject.Inject
+import javax.inject.Singleton
 
 
 /**
- * Fuente de datos remota para las operaciones de mensajes.
+ * Fuente de datos remota para mensajes utilizando Firebase Firestore y Storage.
  */
+@Singleton
 class MessageRemoteDataSource @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val firebaseStorage: FirebaseStorage
 ) {
-    private val messagesCollection = firestore.collection("messages")
-    private val storageRef = firebaseStorage.reference
+
+    /**
+     * Obtiene un flujo de mensajes para una sala de chat específica desde Firestore.
+     * @param roomId El ID de la sala de chat.
+     * @return Un [Flow] que emite una lista de [Message].
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getMessages(roomId: String): Flow<List<Message>> = callbackFlow {
+        val subscription = firestore.collection(Constants.FIRESTORE_COLLECTION_CHATROOMS)
+            .document(roomId)
+            .collection(Constants.FIRESTORE_COLLECTION_MESSAGES)
+            .orderBy("timestamp", Query.Direction.ASCENDING)
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    close(e) // Cierra el flujo con el error.
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val messages = snapshot.documents.mapNotNull { it.toObject(Message::class.java) }
+                    trySend(messages).isSuccess // Emite la lista de mensajes.
+                } else {
+                    trySend(emptyList()).isSuccess // Emite una lista vacía si no hay snapshot.
+                }
+            }
+        awaitClose { subscription.remove() } // Cancela el listener cuando el flujo deja de ser recogido.
+    }
 
     /**
      * Envía un nuevo mensaje a Firestore.
-     * @param message El objeto [Message] a enviar.
-     * @return El objeto [Message] enviado si la operación es exitosa.
+     * @param message El mensaje a enviar.
+     * @throws Exception Si el envío del mensaje falla.
      */
-    suspend fun sendMessage(message: Message): Result<Message> = runCatching {
-        val docRef = messagesCollection.document(message.id)
-        docRef.set(message).await()
-        message
-    }
-
-    /**
-     * Obtiene un flujo de mensajes para una sala de chat específica.
-     * Los mensajes se ordenan por marca de tiempo.
-     * @param roomId El ID de la sala de chat.
-     * @return Un [Flow] que emite una lista de [Message] para la sala.
-     */
-    fun getMessages(roomId: String): Flow<Result<List<Message>>> = callbackFlow {
-        val query = messagesCollection
-            .whereEqualTo("roomId", roomId)
-            .orderBy("timestamp", Query.Direction.ASCENDING) // Ordenar por timestamp
-
-        val subscription = query.addSnapshotListener { snapshot, e ->
-            if (e != null) {
-                trySend(Result.failure(e)).isSuccess
-                return@addSnapshotListener
-            }
-
-            if (snapshot != null) {
-                val messages = snapshot.documents.mapNotNull { it.toObject<Message>() }
-                trySend(Result.success(messages)).isSuccess
-            } else {
-                trySend(Result.success(emptyList())).isSuccess
-            }
-        }
-        awaitClose { subscription.remove() } // Limpiar el listener al cerrar el flujo.
-    }
-
-    /**
-     * Actualiza el estado de un mensaje en Firestore.
-     * @param messageId El ID del mensaje a actualizar.
-     * @param status El nuevo estado del mensaje (ej. "DELIVERED", "READ").
-     * @return Un [Result] indicando el éxito o fallo de la operación.
-     */
-    suspend fun updateMessageStatus(messageId: String, status: String): Result<Unit> = runCatching {
-        messagesCollection.document(messageId)
-            .update("status", status)
+    suspend fun sendMessage(message: Message) {
+        firestore.collection(Constants.FIRESTORE_COLLECTION_CHATROOMS)
+            .document(message.roomId)
+            .collection(Constants.FIRESTORE_COLLECTION_MESSAGES)
+            .document(message.id)
+            .set(message)
             .await()
     }
 
     /**
-     * Sube un archivo a Firebase Storage y retorna su URL de descarga.
-     * @param fileUri URI local del archivo a subir.
-     * @param fileName Nombre del archivo.
-     * @param messageType Tipo de mensaje (IMAGE o FILE) para determinar la ruta de almacenamiento.
-     * @return La URL de descarga del archivo si la subida es exitosa.
+     * Sube un archivo (imagen o documento) a Firebase Storage.
+     * @param fileUri La URI del archivo a subir.
+     * @param fileType El tipo de archivo (IMAGE o FILE).
+     * @return La URL de descarga del archivo subido.
+     * @throws Exception Si la subida del archivo falla.
      */
-    suspend fun uploadFile(fileUri: Uri, fileName: String, messageType: Message.MessageType): Result<String> = runCatching {
-        val path = when (messageType) {
-            Message.MessageType.IMAGE -> "chat_images/"
-            Message.MessageType.FILE -> "chat_files/"
-            else -> throw IllegalArgumentException("Unsupported message type for file upload")
+    suspend fun uploadFile(fileUri: Uri, fileType: Message.MessageType): String {
+        val storageRef = firebaseStorage.reference
+        val path = when (fileType) {
+            Message.MessageType.IMAGE -> Constants.FIREBASE_STORAGE_IMAGES_PATH
+            Message.MessageType.FILE -> Constants.FIREBASE_STORAGE_FILES_PATH
+            else -> throw IllegalArgumentException("Unsupported file type for upload: $fileType")
         }
-        val fileExtension = fileName.substringAfterLast('.', "")
-        val uniqueFileName = "${UUID.randomUUID()}.$fileExtension"
-        val fileRef = storageRef.child(path + uniqueFileName)
+        val fileName = UUID.randomUUID().toString() + "_" + fileUri.lastPathSegment
+        val fileRef = storageRef.child("$path$fileName")
 
-        fileRef.putFile(fileUri).await()
-        fileRef.downloadUrl.await().toString()
+        val uploadTask = fileRef.putFile(fileUri).await()
+        return fileRef.downloadUrl.await().toString()
+    }
+
+    /**
+     * Actualiza el estado de un mensaje en Firestore.
+     * @param roomId El ID de la sala de chat.
+     * @param messageId El ID del mensaje a actualizar.
+     * @param newStatus El nuevo estado del mensaje.
+     * @throws Exception Si la actualización del estado falla.
+     */
+    suspend fun updateMessageStatus(roomId: String, messageId: String, newStatus: Message.MessageStatus) {
+        firestore.collection(Constants.FIRESTORE_COLLECTION_CHATROOMS)
+            .document(roomId)
+            .collection(Constants.FIRESTORE_COLLECTION_MESSAGES)
+            .document(messageId)
+            .update("status", newStatus.name)
+            .await()
     }
 }

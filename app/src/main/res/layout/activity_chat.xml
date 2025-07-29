@@ -4,16 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context=".presentation.ui.chat.ChatActivity">
 
     <TextView
-        android:id="@+id/chatRoomName"
+        android:id="@+id/roomNameTextView"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:text="Nombre de la Sala de Chat"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/material_dynamic_neutral60"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="Nombre de la Sala"
+        android:textColor="@color/white"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -21,16 +24,15 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewChatMessages"
+        android:id="@+id/chatRecyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp"
+        android:padding="8dp"
         app:layout_constraintBottom_toTopOf="@+id/messageInputLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chatRoomName"
-        tools:listitem="@android:layout/simple_list_item_2" />
+        app:layout_constraintTop_toBottomOf="@+id/roomNameTextView"
+        tools:listitem="@layout/item_chatroom" />
 
     <LinearLayout
         android:id="@+id/messageInputLayout"
@@ -38,35 +40,40 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="8dp"
+        android:background="@drawable/input_background"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
         <EditText
-            android:id="@+id/editTextMessage"
+            android:id="@+id/messageEditText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="Escribe un mensaje..."
-            android:inputType="textLongMessage"
-            android:maxLines="5" />
+            android:inputType="textMultiLine"
+            android:maxLines="5"
+            android:padding="10dp"
+            android:background="@drawable/rounded_edittext"
+            android:layout_marginEnd="8dp" />
 
         <ImageButton
-            android:id="@+id/buttonAttachFile"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="8dp"
+            android:id="@+id/attachFileButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/rounded_button"
+            android:src="@android:drawable/ic_menu_gallery"
             android:contentDescription="Adjuntar archivo"
-            android:src="@android:drawable/ic_menu_upload" />
+            android:layout_marginEnd="8dp"
+            app:tint="@color/white" />
 
         <Button
-            android:id="@+id/buttonSendMessage"
+            android:id="@+id/sendMessageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="8dp"
-            android:text="Enviar" />
+            android:text="Enviar"
+            android:textColor="@color/white"
+            android:background="@drawable/rounded_button" />
 
     </LinearLayout>
 

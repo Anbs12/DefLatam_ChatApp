@@ -4,73 +4,88 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
+    android:background="@color/white"
     tools:context=".presentation.ui.perfil.PerfilActivity">
 
     <TextView
-        android:id="@+id/perfilTitle"
+        android:id="@+id/titleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Perfil de Usuario"
-        android:textSize="24sp"
+        android:text="Mi Perfil"
+        android:textSize="28sp"
         android:textStyle="bold"
+        android:textColor="@color/material_dynamic_neutral60"
+        android:layout_marginTop="64dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/imageViewProfile"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_marginTop="24dp"
-        android:src="@android:drawable/sym_def_app_icon"
-        android:contentDescription="Imagen de perfil"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/perfilTitle" />
-
     <TextView
-        android:id="@+id/textViewUserName"
+        android:id="@+id/usernameLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Nombre de Usuario"
-        android:textSize="20sp"
+        android:text="Nombre de Usuario:"
+        android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:textColor="@color/black"
+        android:layout_marginTop="48dp"
+        android:layout_marginStart="32dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewProfile" />
+        app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
 
     <TextView
-        android:id="@+id/textViewUserEmail"
+        android:id="@+id/usernameTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="32dp"
+        android:textSize="18sp"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/usernameLabel"
+        app:layout_constraintTop_toTopOf="@+id/usernameLabel"
+        app:layout_constraintBottom_toBottomOf="@+id/usernameLabel"
+        tools:text="NombreUsuarioEjemplo" />
+
+    <TextView
+        android:id="@+id/emailLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="correo@ejemplo.com"
-        android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:text="Email:"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_marginTop="24dp"
+        android:layout_marginStart="32dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewUserName" />
+        app:layout_constraintTop_toBottomOf="@+id/usernameTextView" />
 
-    <Button
-        android:id="@+id/buttonEditProfile"
+    <TextView
+        android:id="@+id/emailTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="Editar Perfil"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="32dp"
+        android:textSize="18sp"
+        android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewUserEmail" />
+        app:layout_constraintStart_toEndOf="@+id/emailLabel"
+        app:layout_constraintTop_toTopOf="@+id/emailLabel"
+        app:layout_constraintBottom_toBottomOf="@+id/emailLabel"
+        tools:text="usuario@ejemplo.com" />
 
     <Button
-        android:id="@+id/buttonLogout"
+        android:id="@+id/logoutButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="48dp"
+        android:layout_marginEnd="32dp"
         android:text="Cerrar Sesión"
+        android:textColor="@color/white"
+        android:background="@drawable/rounded_button_red"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonEditProfile"
-        style="?attr/materialButtonOutlinedStyle" />
+        app:layout_constraintTop_toBottomOf="@+id/emailTextView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,6 +3,7 @@ package com.example.deflatam_chatapp.presentation.ui.login
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -14,6 +15,7 @@ import com.example.deflatam_chatapp.presentation.ui.salas.SalasActivity
 import com.example.deflatam_chatapp.presentation.viewmodel.LoginViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+
 
 /**
  * Actividad para el inicio de sesión y registro de usuarios.
@@ -29,6 +31,8 @@ class LoginActivity : AppCompatActivity() {
 
         val emailEditText: EditText = findViewById(R.id.emailEditText)
         val passwordEditText: EditText = findViewById(R.id.passwordEditText)
+        // Asegúrate de que el layout 'activity_login.xml' tenga un EditText con id 'usernameEditText'
+        // Si no lo tiene, quita esta línea o añádelo a tu XML.
         val usernameEditText: EditText = findViewById(R.id.usernameEditText)
         val loginButton: Button = findViewById(R.id.loginButton)
         val registerButton: Button = findViewById(R.id.registerButton)
@@ -45,13 +49,15 @@ class LoginActivity : AppCompatActivity() {
                     }
                     is LoginViewModel.AuthState.Error -> {
                         Toast.makeText(this@LoginActivity, "Error: ${authState.message}", Toast.LENGTH_LONG).show()
+                        Log.e("LoginActivity", "Authentication Error: ${authState.message}")
                     }
                     LoginViewModel.AuthState.Loading -> {
                         // Mostrar un indicador de carga.
                         Toast.makeText(this@LoginActivity, "Cargando...", Toast.LENGTH_SHORT).show()
                     }
                     LoginViewModel.AuthState.Unauthenticated -> {
-                        // No hacer nada, el usuario necesita iniciar sesión/registrarse.
+                        // No hacer nada, el usuario necesita iniciar sesión/registrarse o ya se ha desconectado.
+                        Log.d("LoginActivity", "User is unauthenticated.")
                     }
                 }
             }
