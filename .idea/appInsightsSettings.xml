@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.deflatam_chatapp" />
+                  <option name="mobileSdkAppId" value="1:360263387098:android:71456549bd14f1832062e3" />
+                  <option name="projectId" value="deflatam-chatapp" />
+                  <option name="projectNumber" value="360263387098" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

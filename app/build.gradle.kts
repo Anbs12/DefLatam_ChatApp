@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -83,4 +84,25 @@ dependencies {
 
     // ===== JSON =====
     implementation("com.google.code.gson:gson:2.13.1")
+
+    // Importar Firebase BoM (Bill of Materials)
+    implementation(platform("com.google.firebase:firebase-bom:34.0.0"))
+
+    // Analytics (recomendado para la mayoría de las apps)
+    implementation("com.google.firebase:firebase-analytics-ktx:22.5.0")
+
+    // Authentication (para inicio de sesión y gestión de usuarios)
+    implementation("com.google.firebase:firebase-auth-ktx:23.2.1")
+
+    // Cloud Firestore (base de datos NoSQL en tiempo real)
+    implementation("com.google.firebase:firebase-firestore-ktx:25.1.4")
+
+    // Realtime Database (otra opción de base de datos en tiempo real)
+    // implementation("com.google.firebase:firebase-database-ktx")
+
+    // Cloud Storage (para almacenar archivos como imágenes, videos, etc.)
+    implementation("com.google.firebase:firebase-storage-ktx:21.0.2")
+
+    // Cloud Messaging (FCM - para notificaciones push)
+    implementation("com.google.firebase:firebase-messaging-ktx:24.1.2")
 }

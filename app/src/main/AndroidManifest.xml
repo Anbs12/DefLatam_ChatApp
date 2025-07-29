@@ -2,6 +2,23 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Permisos de Internet para la comunicación de red (Firebase, WebSockets) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Permiso para acceder al estado de la red (útil para detectar si hay conexión offline/online) -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Permiso para acceder al estado de Wi-Fi (también útil para la conectividad) -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- Permiso para leer almacenamiento externo (para seleccionar archivos/imágenes) -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <!-- Permiso para escribir en almacenamiento externo (si necesitas guardar archivos, aunque es menos común ahora) -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+    <!-- Permiso para que las aplicaciones de Android 13+ puedan enviar notificaciones -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -20,6 +37,56 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+
+        <!-- Actividad de Login -->
+        <activity
+            android:name=".presentation.ui.login.LoginActivity"
+            android:exported="true"
+            android:theme="@style/Theme.DefLatam_ChatApp">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Actividad de Salas de Chat -->
+        <activity
+            android:name=".presentation.ui.salas.SalasActivity"
+            android:exported="false"
+            android:theme="@style/Theme.DefLatam_ChatApp" />
+
+        <!-- Actividad de Chat -->
+        <activity
+            android:name=".presentation.ui.chat.ChatActivity"
+            android:exported="false"
+            android:theme="@style/Theme.DefLatam_ChatApp" />
+
+        <!-- Actividad de Perfil de Usuario -->
+        <activity
+            android:name=".presentation.ui.perfil.PerfilActivity"
+            android:exported="false"
+            android:theme="@style/Theme.DefLatam_ChatApp" />
+
+        <!-- Servicio de Firebase Messaging para Notificaciones Push -->
+        <service
+            android:name=".data.service.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!--
+        Metadata para el ID de la aplicación de Firebase.
+        Normalmente se auto-genera si usas el plugin de Google Services.
+        Asegúrate de que tu archivo google-services.json esté en la carpeta 'app'.
+        -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_color" />
+
     </application>
 
 </manifest>
