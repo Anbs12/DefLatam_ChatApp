@@ -72,7 +72,9 @@ class LoginActivity : AppCompatActivity() {
             val email = emailEditText.text.toString()
             val password = passwordEditText.text.toString()
             if (email.isNotEmpty() && password.isNotEmpty()) {
-                loginViewModel.login(email, password)
+                if (password.length > 6) loginViewModel.login(email, password)
+                else
+                    Toast.makeText(this, "La contraseña debe tener al menos 6 caracteres.", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(this, "Por favor, ingresa email y contraseña.", Toast.LENGTH_SHORT).show()
             }
@@ -83,7 +85,9 @@ class LoginActivity : AppCompatActivity() {
             val password = passwordEditText.text.toString()
             val username = usernameEditText.text.toString()
             if (email.isNotEmpty() && password.isNotEmpty() && username.isNotEmpty()) {
-                loginViewModel.register(email, password, username)
+                if (password.length > 6) loginViewModel.register(email, password, username)
+                else
+                    Toast.makeText(this, "La contraseña debe tener al menos 6 caracteres.", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(this, "Por favor, completa todos los campos para registrarte.", Toast.LENGTH_SHORT).show()
             }

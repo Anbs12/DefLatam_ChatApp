@@ -32,7 +32,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/roomNameTextView"
-        tools:listitem="@layout/item_chatroom" />
+        tools:listitem="@layout/item_message_received" />
 
     <LinearLayout
         android:id="@+id/messageInputLayout"

@@ -9,15 +9,13 @@
     <!-- Permiso para acceder al estado de Wi-Fi (también útil para la conectividad) -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- Permiso para leer almacenamiento externo (para seleccionar archivos/imágenes) -->
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <!-- Permiso para escribir en almacenamiento externo (si necesitas guardar archivos, aunque es menos común ahora) -->
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="29" />
     <!-- Permiso para que las aplicaciones de Android 13+ puedan enviar notificaciones -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
         android:allowBackup="true"
@@ -87,7 +85,9 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_notification" />
-        <meta-data android:name="com.google.firebase.messaging.default_notification_color" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/material_dynamic_neutral60" />
 
     </application>
 

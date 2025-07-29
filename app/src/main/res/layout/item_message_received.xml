@@ -18,6 +18,8 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Usuario A" />
 
+
+    <!--app:layout_constraintWidth_max="0.8dp"-->
     <androidx.cardview.widget.CardView
         android:id="@+id/messageCardView"
         android:layout_width="wrap_content"
@@ -29,7 +31,6 @@
         app:cardElevation="2dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/senderNameTextView"
-        app:layout_constraintWidth_max="0.8dp"
         app:layout_constrainedWidth="true">
 
         <LinearLayout
@@ -42,7 +43,6 @@
                 android:id="@+id/messageContentTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/black"
                 android:textSize="16sp"
                 tools:text="Este es un mensaje recibido de otro usuario." />
 
@@ -59,8 +59,8 @@
 
             <ImageView
                 android:id="@+id/imageView"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
                 android:scaleType="centerCrop"
                 android:visibility="gone"
                 android:layout_marginTop="4dp"

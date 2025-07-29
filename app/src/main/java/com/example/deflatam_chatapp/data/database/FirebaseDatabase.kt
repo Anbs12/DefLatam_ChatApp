@@ -5,8 +5,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 
-
-
 /**
  * Provee instancias de los servicios de Firebase.
  */

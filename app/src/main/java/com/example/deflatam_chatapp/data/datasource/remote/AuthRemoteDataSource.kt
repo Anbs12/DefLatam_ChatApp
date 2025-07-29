@@ -33,7 +33,7 @@ class AuthRemoteDataSource @Inject constructor(
             id = firebaseUser.uid,
             username = username,
             email = email,
-            avatarUrl = null
+            //avatarUrl = null
         )
         firestore.collection("users").document(user.id).set(user).await()
         return user
