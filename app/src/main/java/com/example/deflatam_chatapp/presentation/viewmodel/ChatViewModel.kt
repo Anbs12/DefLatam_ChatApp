@@ -1,6 +1,7 @@
 package com.example.deflatam_chatapp.presentation.viewmodel
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.deflatam_chatapp.domain.model.Message
@@ -112,6 +113,7 @@ class ChatViewModel @Inject constructor(
                 _eventFlow.emit(UiEvent.MessageSent)
             } catch (e: Exception) {
                 _eventFlow.emit(UiEvent.ShowToast("Error al enviar mensaje: ${e.localizedMessage}"))
+                Log.e("ChatViewModel", "Error al enviar mensaje", e)
             }
         }
     }
