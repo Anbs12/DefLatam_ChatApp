@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@android:color/transparent" /> <!-- Color de fondo transparente -->
+    <stroke
+        android:width="2dp"
+        android:color="@color/chat_timestamp_color" /> <!-- Color y grosor del borde -->
+    <corners android:radius="25dp" /> <!-- Radio de las esquinas redondeadas -->
+</shape>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "360263387098",
+    "project_id": "deflatam-chatapp",
+    "storage_bucket": "deflatam-chatapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:360263387098:android:71456549bd14f1832062e3",
+        "android_client_info": {
+          "package_name": "com.example.deflatam_chatapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGLhK2Doc3Zzc1ztwzttqBOlV9oNQn1WQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
