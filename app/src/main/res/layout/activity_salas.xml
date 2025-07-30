@@ -11,11 +11,11 @@
         android:id="@+id/titleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         android:text="Salas de Chat"
+        android:textColor="@color/material_dynamic_neutral60"
         android:textSize="28sp"
         android:textStyle="bold"
-        android:textColor="@color/material_dynamic_neutral60"
-        android:layout_marginTop="32dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -27,10 +27,12 @@
         android:layout_marginStart="32dp"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="32dp"
+        android:background="@drawable/rounded_edittext"
         android:hint="Nombre de nueva sala"
         android:inputType="text"
         android:padding="12dp"
-        android:background="@drawable/rounded_edittext"
+        android:textColor="@color/black"
+        android:textColorHint="@color/black"
         app:layout_constraintEnd_toStartOf="@+id/createRoomButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
@@ -40,12 +42,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
+        android:background="@drawable/rounded_button"
         android:text="Crear"
         android:textColor="@color/white"
-        android:background="@drawable/rounded_button"
+        app:layout_constraintBottom_toBottomOf="@+id/createRoomNameEditText"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/createRoomNameEditText"
-        app:layout_constraintBottom_toBottomOf="@+id/createRoomNameEditText" />
+        app:layout_constraintTop_toTopOf="@+id/createRoomNameEditText" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/salasRecyclerView"
@@ -68,9 +70,9 @@
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="16dp"
+        android:background="@drawable/rounded_button"
         android:text="Mi Perfil"
         android:textColor="@color/white"
-        android:background="@drawable/rounded_button"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

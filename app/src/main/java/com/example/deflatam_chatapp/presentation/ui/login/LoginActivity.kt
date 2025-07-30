@@ -46,6 +46,7 @@ class LoginActivity : AppCompatActivity() {
                 when (authState) {
                     is LoginViewModel.AuthState.Authenticated -> {
                         Toast.makeText(this@LoginActivity, "Sesión iniciada como ${authState.user.username}", Toast.LENGTH_SHORT).show()
+                        progressBar.visibility = View.GONE
                         val intent = Intent(this@LoginActivity, SalasActivity::class.java)
                         startActivity(intent)
                         finish() // Finaliza esta actividad para que el usuario no pueda volver atrás.
@@ -53,14 +54,19 @@ class LoginActivity : AppCompatActivity() {
                     is LoginViewModel.AuthState.Error -> {
                         Toast.makeText(this@LoginActivity, "Error: ${authState.message}", Toast.LENGTH_LONG).show()
                         Log.e("LoginActivity", "Authentication Error: ${authState.message}")
+                        progressBar.visibility = View.GONE
                     }
                     LoginViewModel.AuthState.Loading -> {
                         // Mostrar un indicador de carga.
+                        progressBar.visibility = View.VISIBLE
                         Toast.makeText(this@LoginActivity, "Cargando...", Toast.LENGTH_SHORT).show()
                     }
                     LoginViewModel.AuthState.Unauthenticated -> {
                         // No hacer nada, el usuario necesita iniciar sesión/registrarse o ya se ha desconectado.
                         Log.d("LoginActivity", "User is unauthenticated.")
+                        Toast.makeText(this@LoginActivity, "No estás autenticado.", Toast.LENGTH_SHORT).show()
+                        progressBar.visibility = View.GONE
+
                     }
                 }
             }

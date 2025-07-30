@@ -1,9 +1,7 @@
 package com.example.deflatam_chatapp.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.deflatam_chatapp.domain.model.ResultSession
 import com.example.deflatam_chatapp.domain.model.User
 import com.example.deflatam_chatapp.domain.usecase.GetCurrentUserUseCase
 import com.example.deflatam_chatapp.domain.usecase.LoginUserUseCase
@@ -46,15 +44,19 @@ class LoginViewModel @Inject constructor(
      */
     fun login(email: String, password: String) {
         viewModelScope.launch {
-            _authState.emit(AuthState.Loading)
-            val result = loginUserUseCase(email, password)
-            val verify = result.username
-            if (verify.isNotEmpty()){
-                checkCurrentUser()
-                _authState.emit(AuthState.Authenticated(result))
-            } else {
-                _authState.emit(AuthState.Error("Error al iniciar sesión"))
+            _authState.emit(AuthState.Loading).runCatching {
+                val result = loginUserUseCase(email, password)
+                val verify = result.username
+                if (verify.isNotEmpty()) {
+                    _authState.emit(AuthState.Authenticated(result))
+                    checkCurrentUser()
+                } else {
+                    _authState.emit(AuthState.Error("Error al iniciar sesión"))
+                }
+            }.onFailure {
+                _authState.emit(AuthState.Error(it.message ?: "Error desconocido al iniciar sesión."))
             }
+
             /*when (val result = loginUserUseCase(email, password)) {
 
                 is ResultSession.Success -> {

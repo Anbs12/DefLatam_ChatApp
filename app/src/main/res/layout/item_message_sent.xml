@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
-        app:cardBackgroundColor="@color/material_dynamic_neutral60"
+        app:cardBackgroundColor="@color/my_message_bubble_color"
         app:cardCornerRadius="12dp"
         app:cardElevation="2dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -30,8 +30,8 @@
                 android:id="@+id/messageContentTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/black"
                 android:textSize="16sp"
+                android:textColor="@color/black"
                 tools:text="Este es un mensaje enviado." />
 
             <TextView
