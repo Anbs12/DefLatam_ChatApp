@@ -1,4 +1,6 @@
-Chat en Tiempo Real 
+Chat en Tiempo Real
+
+##Este si fue complicado jeje
 
 Conceptos: WebSocket, Arquitectura Clean, Inyección de Dependencias, Testing 
 
