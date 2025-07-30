@@ -47,18 +47,31 @@ class LoginViewModel @Inject constructor(
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _authState.emit(AuthState.Loading)
-            when (val result = loginUserUseCase(email, password)) {
-                is ResultSession.Success<*> -> {
+            val result = loginUserUseCase(email, password)
+            val verify = result.username
+            if (verify.isNotEmpty()){
+                checkCurrentUser()
+                _authState.emit(AuthState.Authenticated(result))
+            } else {
+                _authState.emit(AuthState.Error("Error al iniciar sesión"))
+            }
+            /*when (val result = loginUserUseCase(email, password)) {
+
+                is ResultSession.Success -> {
                     // Tras un inicio de sesión exitoso, verificamos el usuario actual para obtener sus detalles.
                     checkCurrentUser()
+                    Log.d("LoginViewModel", "Inicio de sesión exitoso. Usuario: ${result.data}")
+                    _authState.emit(AuthState.Authenticated(result.data as User))
                 }
                 is ResultSession.Error -> {
                     _authState.emit(AuthState.Error(result.exception.message ?: "Error desconocido al iniciar sesión."))
                 }
                 is ResultSession.Loading -> {
                     // El estado de carga ya fue emitido al principio de la función.
+                    Log.d("LoginViewModel", "Cargando...")
+                    _authState.emit(AuthState.Loading)
                 }
-            }
+            }*/
         }
     }
 
@@ -71,8 +84,17 @@ class LoginViewModel @Inject constructor(
     fun register(email: String, password: String, username: String) {
         viewModelScope.launch {
             _authState.emit(AuthState.Loading)
-            when (val result = registerUserUseCase(email, password, username)) {
-                is ResultSession.Success<*> -> {
+            val result = registerUserUseCase(email, password, username)
+            val verify = result.username
+            if (verify.isNotEmpty()) {
+                _authState.emit(AuthState.Authenticated(result))
+                checkCurrentUser()
+            } else {
+                _authState.emit(AuthState.Error("Error al registrar el usuario"))
+            }
+
+            /*when (val result = registerUserUseCase(email, password, username)) {
+                is ResultSession.Success -> {
                     // Después de un registro exitoso, el usuario aún necesita iniciar sesión.
                     // Emitimos Unauthenticated para que la UI sepa que se ha completado el registro
                     // pero no se ha iniciado sesión automáticamente.
@@ -85,7 +107,7 @@ class LoginViewModel @Inject constructor(
                 is ResultSession.Loading -> {
                     // El estado de carga ya fue emitido al principio de la función.
                 }
-            }
+            }*/
         }
     }
 
@@ -96,8 +118,17 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             _authState.emit(AuthState.Loading)
             getCurrentUserUseCase().collect { result ->
-                when (result) {
-                    is ResultSession.Success<*> -> {
+                if (result.isSuccess) {
+                    val user = result.getOrNull()
+                    if (user != null) {
+                        _authState.emit(AuthState.Authenticated(user))
+                    } else {
+                        _authState.emit(AuthState.Unauthenticated)
+                    }
+
+                }
+                /*when (result) {
+                    is ResultSession.Success -> {
                         val user = result.data
                         if (user != null) {
                             _authState.emit(AuthState.Authenticated(user as User))
@@ -113,7 +144,7 @@ class LoginViewModel @Inject constructor(
                     is ResultSession.Loading -> {
                         // No es necesario emitir aquí, ya se emitió al principio de checkCurrentUser.
                     }
-                }
+                }*/
             }
         }
     }

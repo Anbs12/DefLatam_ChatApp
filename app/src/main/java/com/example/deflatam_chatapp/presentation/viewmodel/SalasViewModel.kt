@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.deflatam_chatapp.domain.model.ChatRoom
 import com.example.deflatam_chatapp.domain.usecase.CreateChatRoomUseCase
 import com.example.deflatam_chatapp.domain.usecase.GetChatRoomsUseCase
+import com.example.deflatam_chatapp.domain.usecase.GetCurrentUserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SalasViewModel @Inject constructor(
     private val getChatRoomsUseCase: GetChatRoomsUseCase,
-    private val createChatRoomUseCase: CreateChatRoomUseCase
+    private val createChatRoomUseCase: CreateChatRoomUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase
 ) : ViewModel() {
 
     private val _chatRooms = MutableStateFlow<List<ChatRoom>>(emptyList())
@@ -31,6 +33,8 @@ class SalasViewModel @Inject constructor(
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow: SharedFlow<UiEvent> = _eventFlow.asSharedFlow()
+
+    private var currentUser = "Usuario?"
 
     /**
      * Eventos de la interfaz de usuario para la pantalla de salas.
@@ -43,6 +47,23 @@ class SalasViewModel @Inject constructor(
     init {
         // Inicia la observación de las salas de chat al inicializar el ViewModel.
         getChatRooms()
+        getCurrentUser()
+    }
+
+    /**
+     * Obtiene el usuario actual autenticado.
+     */
+    fun getCurrentUser(){
+        viewModelScope.launch {
+            getCurrentUserUseCase().collect { result ->
+                if (result.isSuccess) {
+                    currentUser = result.getOrNull()!!.username
+                }
+                else {
+                    val errorMessage = result.exceptionOrNull()?.message
+                }
+            }
+        }
     }
 
     /**
@@ -61,12 +82,13 @@ class SalasViewModel @Inject constructor(
      * @param roomName Nombre de la sala a crear.
      */
     fun createChatRoom(roomName: String) {
+        val userName = currentUser
         viewModelScope.launch {
             try {
                 val newRoom = ChatRoom(
                     id = UUID.randomUUID().toString(),
                     name = roomName,
-                    description = "Sala creada por el usuario.",
+                    description = "Sala creada por el usuario: $userName",
                     participants = emptyList(), // Se añadirán participantes al unirse.
                     createdAt = System.currentTimeMillis()
                 )

@@ -10,7 +10,8 @@ import java.util.UUID
  */
 @Entity(tableName = "messages")
 data class Message(
-    @PrimaryKey val id: String = UUID.randomUUID().toString(), // ID único del mensaje, también clave primaria de Room.
+    @PrimaryKey val id: String = UUID.randomUUID()
+        .toString(), // ID único del mensaje, también clave primaria de Room.
     val roomId: String, // ID de la sala a la que pertenece el mensaje.
     val senderId: String, // ID del remitente del mensaje.
     val content: String, // Contenido del mensaje de texto.
@@ -33,5 +34,8 @@ data class Message(
     enum class MessageStatus {
         SENT, DELIVERED, READ
     }
+
+    // Constructor sin argumentos requerido por Firebase Firestore para deserialización
+    constructor() : this("", "", "", "", 0L, MessageType.TEXT, null, null, MessageStatus.SENT)
 }
 

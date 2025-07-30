@@ -45,9 +45,9 @@ class PerfilActivity : AppCompatActivity() {
                     emailTextView.text = "N/A"
                     // Si el usuario es nulo, redirigir al login
                     Toast.makeText(this@PerfilActivity, "Sesión caducada. Por favor, inicia sesión de nuevo.", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this@PerfilActivity, LoginActivity::class.java)
+                    /*val intent = Intent(this@PerfilActivity, LoginActivity::class.java)
                     startActivity(intent)
-                    finishAffinity() // Cierra todas las actividades anteriores.
+                    finishAffinity() // Cierra todas las actividades anteriores.*/
                 }
             }
         }

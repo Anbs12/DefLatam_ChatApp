@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.provider.OpenableColumns
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -34,7 +35,7 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var chatAdapter: ChatAdapter
     private lateinit var messageEditText: EditText
     private lateinit var sendMessageButton: Button
-    private lateinit var attachFileButton: Button
+    private lateinit var attachFileButton: ImageButton
     private lateinit var roomNameTextView: TextView
 
     private var roomId: String? = null

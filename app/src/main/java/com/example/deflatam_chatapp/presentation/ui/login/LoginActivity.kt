@@ -4,8 +4,10 @@ package com.example.deflatam_chatapp.presentation.ui.login
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -29,6 +31,7 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        val progressBar = findViewById<ProgressBar>(R.id.progressBar)
         val emailEditText: EditText = findViewById(R.id.emailEditText)
         val passwordEditText: EditText = findViewById(R.id.passwordEditText)
         // Asegúrate de que el layout 'activity_login.xml' tenga un EditText con id 'usernameEditText'
@@ -69,27 +72,38 @@ class LoginActivity : AppCompatActivity() {
         }
 
         loginButton.setOnClickListener {
+            progressBar.visibility = View.VISIBLE
             val email = emailEditText.text.toString()
             val password = passwordEditText.text.toString()
             if (email.isNotEmpty() && password.isNotEmpty()) {
-                if (password.length > 6) loginViewModel.login(email, password)
-                else
+                if (password.length >= 6) {
+                    loginViewModel.login(email, password)
+                } else{
                     Toast.makeText(this, "La contraseña debe tener al menos 6 caracteres.", Toast.LENGTH_SHORT).show()
+                    progressBar.visibility = View.GONE
+                }
             } else {
                 Toast.makeText(this, "Por favor, ingresa email y contraseña.", Toast.LENGTH_SHORT).show()
+                progressBar.visibility = View.GONE
             }
         }
 
         registerButton.setOnClickListener {
+            progressBar.visibility = View.VISIBLE
             val email = emailEditText.text.toString()
             val password = passwordEditText.text.toString()
             val username = usernameEditText.text.toString()
             if (email.isNotEmpty() && password.isNotEmpty() && username.isNotEmpty()) {
-                if (password.length > 6) loginViewModel.register(email, password, username)
-                else
+                if (password.length >= 6){
+                    loginViewModel.register(email, password, username)
+                } else{
                     Toast.makeText(this, "La contraseña debe tener al menos 6 caracteres.", Toast.LENGTH_SHORT).show()
+                    progressBar.visibility = View.GONE
+                }
+
             } else {
                 Toast.makeText(this, "Por favor, completa todos los campos para registrarte.", Toast.LENGTH_SHORT).show()
+                progressBar.visibility = View.GONE
             }
         }
     }

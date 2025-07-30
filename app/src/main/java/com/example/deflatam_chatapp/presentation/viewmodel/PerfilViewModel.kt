@@ -25,6 +25,19 @@ class PerfilViewModel @Inject constructor(
     private val logoutUserUseCase: LogoutUserUseCase
 ) : ViewModel() {
 
+    /**
+     * Clase sellada para representar los diferentes estados de autenticación.
+     */
+    sealed class AuthState {
+        object Loading : AuthState()
+        object Unauthenticated : AuthState()
+        data class Authenticated(val user: User) : AuthState()
+        data class Error(val message: String) : AuthState()
+    }
+
+    private val _authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
+    val authState: StateFlow<AuthState> = _authState.asStateFlow()
+
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
@@ -49,18 +62,15 @@ class PerfilViewModel @Inject constructor(
      */
     private fun loadCurrentUser() {
         viewModelScope.launch {
-            try {
-                var user: User
-                getCurrentUserUseCase().collect { result ->
-                    val id = result.getOrNull()?.id!!
-                    val nombre = result.getOrNull()?.username!!
-                    val email = result.getOrNull()?.email!!
-                    user = User(id, nombre, email)
-                    _currentUser.value = user
+            getCurrentUserUseCase().collect { result ->
+                if (result.isSuccess) {
+                    val user = result.getOrNull()
+                    if (user != null) {
+                        _currentUser.value = user
+                    } else {
+                        _currentUser.value = null
+                    }
                 }
-            } catch (e: Exception) {
-                _eventFlow.emit(UiEvent.ShowToast("Error al cargar perfil: ${e.localizedMessage}"))
-                _currentUser.value = null
             }
         }
     }

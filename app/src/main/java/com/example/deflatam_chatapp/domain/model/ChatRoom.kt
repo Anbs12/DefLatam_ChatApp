@@ -13,4 +13,9 @@ data class ChatRoom(
     val description: String? = null, // Descripción de la sala de chat (opcional).
     val participants: List<String> = emptyList(), // Lista de IDs de usuarios participantes.
     val createdAt: Long = System.currentTimeMillis() // Marca de tiempo de creación de la sala.
-)
+){
+    // Constructor sin argumentos requerido por Firebase Firestore para deserialización
+    constructor() : this("", "", null, emptyList(), 0L)
+
+
+}

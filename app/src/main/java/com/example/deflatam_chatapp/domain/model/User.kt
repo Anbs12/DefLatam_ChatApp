@@ -11,5 +11,8 @@ data class User(
     @PrimaryKey val id: String, // ID único del usuario, también clave primaria de Room.
     val username: String, // Nombre de usuario.
     val email: String, // Correo electrónico del usuario.
-    val avatarUrl: String = "" // URL del avatar del usuario (opcional).
-)
+    val avatarUrl: String? = null // URL del avatar del usuario (opcional).
+){
+    // Constructor sin argumentos requerido por Firebase Firestore para deserialización
+    constructor() : this("", "", "", null)
+}

@@ -78,6 +78,7 @@ class SalasActivity : AppCompatActivity() {
         }
 
         createRoomButton.setOnClickListener {
+            val userName = "Usuario"
             val roomName = createRoomNameEditText.text.toString().trim()
             if (roomName.isNotEmpty()) {
                 salasViewModel.createChatRoom(roomName)
