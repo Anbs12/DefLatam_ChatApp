@@ -1,3 +1,10 @@
+# Para ejecutar
+
+Compilar e instalar app en movil o emulador.
+
+------------
+
+
 Chat en Tiempo Real
 
 ## Este si fue complicado jeje
