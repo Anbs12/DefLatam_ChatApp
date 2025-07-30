@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -94,6 +95,7 @@ class ChatActivity : AppCompatActivity() {
                 chatAdapter.submitList(messages) {
                     // Desplazarse al último mensaje cuando la lista se actualice
                     recyclerView.scrollToPosition(chatAdapter.itemCount - 1)
+                    Log.d("ChatActivity___", "Messages updated: $messages")
                 }
             }
         }

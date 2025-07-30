@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -39,36 +40,36 @@ class MessageRepositoryImpl @Inject constructor(
      * @return Un [Flow] que emite una lista de [Message].
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun getMessages(roomId: String): Flow<List<Message>> {
-        // Combina los mensajes de Firestore y WebSocket, y descifra el contenido.
-        return combine(
+    override fun getMessages(roomId: String): Flow<List<Message>> =
+        combine(
+            // 1) Firestore
             messageRemoteDataSource.getMessages(roomId),
-            webSocketManager.incomingMessages.map { message ->
-                // Solo emitir el mensaje del WebSocket si pertenece a la sala actual
-                if (message.roomId == roomId) listOf(message) else emptyList()
-            }.distinctUntilChanged().onEach { incomingWsMessages ->
-                // Guardar mensajes entrantes del WebSocket en Room
-                if (incomingWsMessages.isNotEmpty()) {
-                    offlineDataSource.saveMessages(incomingWsMessages)
-                }
-            },
-            offlineDataSource.getMessages(roomId).distinctUntilChanged() // Mensajes desde Room
-        ) { remoteMessages, websocketMessages, localMessages ->
-            // Prioridad: WebSocket (más reciente) > Remoto > Local
-            val combined = (remoteMessages + websocketMessages + localMessages)
-                .distinctBy { it.id } // Elimina duplicados por ID
-                .sortedBy { it.timestamp } // Ordena por marca de tiempo
 
-            // Descifra el contenido de los mensajes antes de emitirlos.
-            combined.map { message ->
-                if (message.type == Message.MessageType.TEXT) {
-                    message.copy(content = encryptionUtils.decrypt(message.content) ?: message.content)
-                } else {
-                    message // Los mensajes de archivo/imagen no se descifran aquí.
-                }
+            // 2) WebSocket, emitiendo [] al arrancar
+            webSocketManager.incomingMessages
+                .map { msg -> if (msg.roomId == roomId) listOf(msg) else emptyList() }
+                .distinctUntilChanged()
+                .onEach { incoming -> if (incoming.isNotEmpty()) offlineDataSource.saveMessages(incoming) }
+                .onStart { emit(emptyList()) },
+
+            // 3) Room, emitiendo [] al arrancar
+            offlineDataSource.getMessages(roomId)
+                .distinctUntilChanged()
+                .onStart { emit(emptyList()) }
+
+        ) { remote, websocket, local ->
+            // Mismo merge + decrypt…
+            val combined = (remote + websocket + local)
+                .distinctBy { it.id }
+                .sortedBy { it.timestamp }
+            combined.map { m ->
+                if (m.type == Message.MessageType.TEXT)
+                    m.copy(content = encryptionUtils.decrypt(m.content) ?: m.content)
+                else m
             }
-        }.distinctUntilChanged() // Asegura que solo se emitan cambios reales.
-    }
+        }
+            .distinctUntilChanged()
+
 
     /**
      * Envía un mensaje. Lo cifra, lo envía a Firestore y a través de WebSocket.

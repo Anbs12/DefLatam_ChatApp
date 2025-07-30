@@ -10,6 +10,8 @@ import com.example.deflatam_chatapp.domain.usecase.GetMessagesUseCase
 import com.example.deflatam_chatapp.domain.usecase.SendFileUseCase
 import com.example.deflatam_chatapp.domain.usecase.SendMessageUseCase
 import com.example.deflatam_chatapp.domain.usecase.UpdateMessageStatusUseCase
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +34,7 @@ class ChatViewModel @Inject constructor(
     private val getCurrentUserUseCase: GetCurrentUserUseCase
 ) : ViewModel() {
 
+    private val firebase: Firebase = Firebase
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
     val messages: StateFlow<List<Message>> = _messages.asStateFlow()
 
@@ -54,15 +57,18 @@ class ChatViewModel @Inject constructor(
 
     init {
         // Obtener el ID del usuario actual al inicializar el ViewModel.
-        viewModelScope.launch {
+        currentUserId = firebase.auth(
+            Firebase.auth.app,
+        ).currentUser!!.uid
+        /*viewModelScope.launch {
             getCurrentUserUseCase()?.let {
                 currentUserId = it.collect { result ->
-                    result.getOrNull()
+                    result.getOrNull()!!.id
                 }.toString()
             } ?: run {
                 _eventFlow.emit(UiEvent.ShowToast("Usuario no autenticado."))
             }
-        }
+        }*/
     }
 
     /**
