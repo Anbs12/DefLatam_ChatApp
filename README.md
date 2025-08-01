@@ -18,13 +18,13 @@ Funcionalidades Requeridas:
  - ✅Lista de salas de chat 
  - ✅Chat en tiempo real con WebSockets 
  - Envío de imágenes y archivos 
- - Notificaciones push 
+ - ❌Notificaciones push (en Firebase se utilizan servicios pagos de Cloud Functions D: )
  - ✅Estados de mensaje (enviado, entregado, leído) 
  - ✅Modo offline con sincronización 
 - ✅Cifrado end-to-end básico
 
 Retos Adicionales :
- - Implementar cifrado end-to-end 
+ - ✅Implementar cifrado end-to-end 
  - Llamadas de voz/video con WebRTC 
  - Bots y comandos automatizados 
  - Traducciones en tiempo real 
