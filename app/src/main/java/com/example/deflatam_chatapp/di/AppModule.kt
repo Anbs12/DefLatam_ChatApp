@@ -10,6 +10,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import com.google.firebase.analytics.FirebaseAnalytics
 
 /**
  * Módulo Hilt para proveer dependencias a nivel de aplicación.
@@ -37,5 +38,11 @@ object AppModule {
     @Singleton
     fun provideGson(): Gson {
         return GsonBuilder().create()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAnalytics(@ApplicationContext context: Context): FirebaseAnalytics {
+        return FirebaseAnalytics.getInstance(context)
     }
 }

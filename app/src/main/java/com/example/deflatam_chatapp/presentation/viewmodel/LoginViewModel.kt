@@ -1,5 +1,6 @@
 package com.example.deflatam_chatapp.presentation.viewmodel
 
+import android.os.Bundle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.deflatam_chatapp.domain.model.User
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.google.firebase.analytics.FirebaseAnalytics
 
 
 /**
@@ -21,7 +23,8 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val loginUserUseCase: LoginUserUseCase,
     private val registerUserUseCase: RegisterUserUseCase,
-    private val getCurrentUserUseCase: GetCurrentUserUseCase // Inyecta el caso de uso para obtener el usuario actual
+    private val getCurrentUserUseCase: GetCurrentUserUseCase, // Inyecta el caso de uso para obtener el usuario actual
+    private val firebaseAnalytics: FirebaseAnalytics
 ) : ViewModel() {
 
     /**
@@ -50,11 +53,22 @@ class LoginViewModel @Inject constructor(
                 if (verify.isNotEmpty()) {
                     _authState.emit(AuthState.Authenticated(result))
                     checkCurrentUser()
+                    // Log de evento de login exitoso
+                    firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, Bundle().apply {
+                        putString(FirebaseAnalytics.Param.METHOD, "email_password")
+                    })
                 } else {
                     _authState.emit(AuthState.Error("Error al iniciar sesión"))
+                    firebaseAnalytics.logEvent("login_failed", Bundle().apply {
+                        putString("error_message", "Error al iniciar sesión")
+                    })
                 }
             }.onFailure {
                 _authState.emit(AuthState.Error(it.message ?: "Error desconocido al iniciar sesión."))
+                // Log de evento de login fallido
+                firebaseAnalytics.logEvent("login_failed", Bundle().apply {
+                    putString("error_message", it.message)
+                })
             }
 
             /*when (val result = loginUserUseCase(email, password)) {
@@ -85,15 +99,30 @@ class LoginViewModel @Inject constructor(
      */
     fun register(email: String, password: String, username: String) {
         viewModelScope.launch {
-            _authState.emit(AuthState.Loading)
-            val result = registerUserUseCase(email, password, username)
-            val verify = result.username
-            if (verify.isNotEmpty()) {
-                _authState.emit(AuthState.Authenticated(result))
-                checkCurrentUser()
-            } else {
-                _authState.emit(AuthState.Error("Error al registrar el usuario"))
+            _authState.emit(AuthState.Loading).runCatching {
+                val result = registerUserUseCase(email, password, username)
+                val verify = result.username
+                if (verify.isNotEmpty()) {
+                    _authState.emit(AuthState.Authenticated(result))
+                    checkCurrentUser()
+                    // Log de evento de registro exitoso
+                    firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, Bundle().apply {
+                        putString(FirebaseAnalytics.Param.METHOD, "email_password")
+                    })
+                } else {
+                    _authState.emit(AuthState.Error("Error al registrar el usuario"))
+                    // Log de evento de registro fallido
+                    firebaseAnalytics.logEvent("signup_failed", Bundle().apply {
+                        putString("error_message", "Error al registrar el usuario")
+                    })
+
+                }
+            }.onFailure {
+                firebaseAnalytics.logEvent("signup_failed", Bundle().apply {
+                    putString("error_message", it.message)
+                })
             }
+
 
             /*when (val result = registerUserUseCase(email, password, username)) {
                 is ResultSession.Success -> {

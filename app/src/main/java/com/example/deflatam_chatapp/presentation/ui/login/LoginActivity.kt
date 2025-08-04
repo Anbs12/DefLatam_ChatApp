@@ -34,6 +34,7 @@ class LoginActivity : AppCompatActivity() {
         val progressBar = findViewById<ProgressBar>(R.id.progressBar)
         val emailEditText: EditText = findViewById(R.id.emailEditText)
         val passwordEditText: EditText = findViewById(R.id.passwordEditText)
+
         // Asegúrate de que el layout 'activity_login.xml' tenga un EditText con id 'usernameEditText'
         // Si no lo tiene, quita esta línea o añádelo a tu XML.
         val usernameEditText: EditText = findViewById(R.id.usernameEditText)
