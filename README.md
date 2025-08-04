@@ -29,4 +29,4 @@ Retos Adicionales :
  - Bots y comandos automatizados 
  - Traducciones en tiempo real 
  - Temas personalizables 
- - Métricas y analytics 
+ - ✅Métricas y analytics 
