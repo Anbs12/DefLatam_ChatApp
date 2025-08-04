@@ -14,7 +14,7 @@ Conceptos: WebSocket, Arquitectura Clean, Inyección de Dependencias, Testing
 Objetivo: Desarrollar una aplicación de chat en tiempo real con múltiples salas, usando WebSockets, arquitectura limpia y técnicas avanzadas de Android. 
 
 Funcionalidades Requeridas: 
-- Autenticación de usuarios 
+- ✅Autenticación de usuarios 
  - ✅Lista de salas de chat 
  - ✅Chat en tiempo real con WebSockets 
  - ❌Envío de imágenes y archivos
