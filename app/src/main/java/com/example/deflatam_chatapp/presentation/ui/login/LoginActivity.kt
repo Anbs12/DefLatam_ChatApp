@@ -30,6 +30,12 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+        //Si es android +13 ajustar pantalla
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            window.setDecorFitsSystemWindows(false)
+        }else{
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+        }
 
         val progressBar = findViewById<ProgressBar>(R.id.progressBar)
         val emailEditText: EditText = findViewById(R.id.emailEditText)
@@ -102,7 +108,10 @@ class LoginActivity : AppCompatActivity() {
             val username = usernameEditText.text.toString()
             if (email.isNotEmpty() && password.isNotEmpty() && username.isNotEmpty()) {
                 if (password.length >= 6){
-                    loginViewModel.register(email, password, username)
+                    loginViewModel.register(email, password, username){
+                        Toast.makeText(this, "Registro exitoso.", Toast.LENGTH_SHORT).show()
+                        progressBar.visibility = View.GONE
+                    }
                 } else{
                     Toast.makeText(this, "La contraseña debe tener al menos 6 caracteres.", Toast.LENGTH_SHORT).show()
                     progressBar.visibility = View.GONE

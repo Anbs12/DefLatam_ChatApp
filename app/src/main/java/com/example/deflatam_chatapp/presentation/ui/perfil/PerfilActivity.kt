@@ -2,6 +2,7 @@ package com.example.deflatam_chatapp.presentation.ui.perfil
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -29,6 +30,12 @@ class PerfilActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_perfil)
+        //Si es android +13 ajustar pantalla
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            window.setDecorFitsSystemWindows(false)
+        } else {
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+        }
 
         usernameTextView = findViewById(R.id.usernameTextView)
         emailTextView = findViewById(R.id.emailTextView)
@@ -57,10 +64,13 @@ class PerfilActivity : AppCompatActivity() {
             perfilViewModel.eventFlow.collect { event ->
                 when (event) {
                     is PerfilViewModel.UiEvent.ShowToast -> {
-                        Toast.makeText(this@PerfilActivity, event.message, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@PerfilActivity, event.message, Toast.LENGTH_SHORT)
+                            .show()
                     }
+
                     PerfilViewModel.UiEvent.LoggedOut -> {
-                        Toast.makeText(this@PerfilActivity, "Sesión cerrada.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@PerfilActivity, "Sesión cerrada.", Toast.LENGTH_SHORT)
+                            .show()
                         val intent = Intent(this@PerfilActivity, LoginActivity::class.java)
                         startActivity(intent)
                         finishAffinity() // Cierra todas las actividades anteriores.

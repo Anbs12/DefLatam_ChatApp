@@ -97,7 +97,7 @@ class LoginViewModel @Inject constructor(
      * @param password La contraseña del nuevo usuario.
      * @param username El nombre de usuario del nuevo usuario.
      */
-    fun register(email: String, password: String, username: String) {
+    fun register(email: String, password: String, username: String, toastSms: () -> Unit) {
         viewModelScope.launch {
             _authState.emit(AuthState.Loading).runCatching {
                 val result = registerUserUseCase(email, password, username)
@@ -105,6 +105,7 @@ class LoginViewModel @Inject constructor(
                 if (verify.isNotEmpty()) {
                     _authState.emit(AuthState.Authenticated(result))
                     checkCurrentUser()
+                    toastSms()
                     // Log de evento de registro exitoso
                     firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, Bundle().apply {
                         putString(FirebaseAnalytics.Param.METHOD, "email_password")
