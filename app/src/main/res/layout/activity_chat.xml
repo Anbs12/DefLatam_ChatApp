@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    tools:context=".presentation.ui.chat.ChatActivity">
+    tools:context=".presentation.ui.chat.ChatActivity"
+    android:id="@+id/activity_chat_xml">
 
     <TextView
         android:id="@+id/roomNameTextView"
