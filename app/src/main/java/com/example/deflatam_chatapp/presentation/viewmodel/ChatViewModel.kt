@@ -1,6 +1,7 @@
 package com.example.deflatam_chatapp.presentation.viewmodel
 
 import android.net.Uri
+import android.os.Bundle
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,6 +12,7 @@ import com.example.deflatam_chatapp.domain.usecase.SendFileUseCase
 import com.example.deflatam_chatapp.domain.usecase.SendMessageUseCase
 import com.example.deflatam_chatapp.domain.usecase.UpdateMessageStatusUseCase
 import com.google.firebase.Firebase
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.auth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -31,7 +33,8 @@ class ChatViewModel @Inject constructor(
     private val sendMessageUseCase: SendMessageUseCase,
     private val sendFileUseCase: SendFileUseCase,
     private val updateMessageStatusUseCase: UpdateMessageStatusUseCase,
-    private val getCurrentUserUseCase: GetCurrentUserUseCase
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val firebaseAnalytics: FirebaseAnalytics
 ) : ViewModel() {
 
     private val firebase: Firebase = Firebase
@@ -113,13 +116,25 @@ class ChatViewModel @Inject constructor(
                 fileName = fileName,
                 status = Message.MessageStatus.SENT // Estado inicial al enviar.
             )
-
+            // Log de evento de mensaje enviado
+            firebaseAnalytics.logEvent("message_sent", Bundle().apply {
+                putString("room_id", currentRoomId)
+                putString("sender_id", currentUserId)
+                putString("message_type", type.name)
+                putString("message_length", content.length.toString())
+            })
             try {
                 sendMessageUseCase(message)
                 _eventFlow.emit(UiEvent.MessageSent)
             } catch (e: Exception) {
                 _eventFlow.emit(UiEvent.ShowToast("Error al enviar mensaje: ${e.localizedMessage}"))
                 Log.e("ChatViewModel", "Error al enviar mensaje", e)
+                // Log de evento de mensaje fallido
+                firebaseAnalytics.logEvent("message_send_failed", Bundle().apply {
+                    putString("room_id", currentRoomId)
+                    putString("sender_id", currentUserId)
+                    putString("error_message", e.message)
+                })
             }
         }
     }

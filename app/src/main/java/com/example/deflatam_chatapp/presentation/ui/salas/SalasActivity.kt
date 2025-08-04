@@ -17,14 +17,19 @@ import com.example.deflatam_chatapp.presentation.ui.chat.ChatActivity
 import com.example.deflatam_chatapp.presentation.ui.perfil.PerfilActivity
 import com.example.deflatam_chatapp.presentation.viewmodel.SalasViewModel
 import com.example.deflatam_chatapp.utils.Constants
+import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Actividad que muestra la lista de salas de chat y permite crear nuevas.
  */
 @AndroidEntryPoint
 class SalasActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var firebaseAnalytics: FirebaseAnalytics
 
     private val salasViewModel: SalasViewModel by viewModels()
     private lateinit var salasAdapter: SalasAdapter
@@ -91,6 +96,15 @@ class SalasActivity : AppCompatActivity() {
             val intent = Intent(this, PerfilActivity::class.java)
             startActivity(intent)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Registra la pantalla cuando la actividad se vuelve visible
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, Bundle().apply {
+            putString(FirebaseAnalytics.Param.SCREEN_NAME, "Salas de Chat")
+            putString(FirebaseAnalytics.Param.SCREEN_CLASS, "SalasActivity")
+        })
     }
 }
 

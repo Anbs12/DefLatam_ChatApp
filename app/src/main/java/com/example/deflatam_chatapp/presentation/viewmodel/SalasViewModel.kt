@@ -1,5 +1,6 @@
 package com.example.deflatam_chatapp.presentation.viewmodel
 
+import android.os.Bundle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.deflatam_chatapp.domain.model.ChatRoom
@@ -16,7 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
-
+import com.google.firebase.analytics.FirebaseAnalytics
 
 /**
  * ViewModel para la pantalla de salas de chat.
@@ -25,7 +26,8 @@ import javax.inject.Inject
 class SalasViewModel @Inject constructor(
     private val getChatRoomsUseCase: GetChatRoomsUseCase,
     private val createChatRoomUseCase: CreateChatRoomUseCase,
-    private val getCurrentUserUseCase: GetCurrentUserUseCase
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val firebaseAnalytics: FirebaseAnalytics
 ) : ViewModel() {
 
     private val _chatRooms = MutableStateFlow<List<ChatRoom>>(emptyList())
@@ -93,9 +95,18 @@ class SalasViewModel @Inject constructor(
                     createdAt = System.currentTimeMillis()
                 )
                 createChatRoomUseCase(newRoom)
+                // Log de evento de creación de sala exitosa
+                firebaseAnalytics.logEvent("chat_room_created", Bundle().apply {
+                    putString("room_id", newRoom.id)
+                    putString("room_name", newRoom.name)
+                })
                 _eventFlow.emit(UiEvent.RoomCreated)
             } catch (e: Exception) {
                 _eventFlow.emit(UiEvent.ShowToast("Error al crear la sala: ${e.localizedMessage}"))
+                // Log de evento de creación de sala fallida
+                firebaseAnalytics.logEvent("chat_room_creation_failed", Bundle().apply {
+                    putString("error_message", e.message)
+                })
             }
         }
     }
