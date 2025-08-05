@@ -56,9 +56,7 @@ Hemos ido más allá para ofrecer una experiencia de chat aún más completa y a
 
 ## 📞 Contacto
 
-Si tienes alguna pregunta, sugerencia o encuentras algún problema, no dudes en abrir un *issue* en este repositorio. ¡Tu feedback es muy valioso!
-
-¡Esperamos que disfrutes explorando esta aplicación de chat en tiempo real!
+Si tienes alguna pregunta, sugerencia o encuentras algún problema, no dudes en abrir un *issue* en este repositorio.
 
 <!--
 
